@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEON FRACTURE // Visual Novel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600&display=swap');
+
+  /* ================================================================
+     IMAGE SLOTS — swap these URLs to change backgrounds / characters
+     ================================================================ */
+  :root {
+    /* --- BACKGROUND IMAGES ---
+       Recommended size: 820×430px, any aspect ratio works (cover-fit)
+       Leave as '' to show the CSS fallback colour instead            */
+    --img-bg-street: '';   /* e.g. url('images/street.jpg')  */
+    --img-bg-bar:    '';   /* e.g. url('images/bar.jpg')     */
+
+    /* --- CHARACTER SPRITE IMAGES ---
+       Recommended: transparent PNG, portrait orientation (~400px tall)
+       Leave as '' to hide the sprite slot entirely                   */
+    --img-sprite-kira:  '';  /* e.g. url('images/kira.png')  */
+    --img-sprite-ryker: '';  /* e.g. url('images/ryker.png') */
+
+    /* ── Palette ── */
+    --bg:       #08060e;
+    --panel:    #0d0b16;
+    --panel2:   #100e1a;
+    --border:   #1e1830;
+    --hot:      #ff2d6b;
+    --cyan:     #00f5ff;
+    --yellow:   #ffe600;
+    --purple:   #9b30ff;
+    --orange:   #ff6b1a;
+    --text:     #d0c8e8;
+    --muted:    #4a3f60;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 19px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  /* Noise grain */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.5;
+  }
+
+  #game {
+    width: 820px;
+    max-width: 100vw;
+    position: relative;
+    user-select: none;
+  }
+
+  /* ── SCENE VISUAL ── */
+  #scene-visual {
+    width: 100%;
+    height: 430px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    background: #050310; /* base fallback */
+  }
+
+  /* ── BACKGROUND LAYER ──
+     Each .scene-bg holds one <img> that covers the full frame.
+     The img is hidden when no src is set (handled in JS).            */
+  .scene-bg {
+    position: absolute; inset: 0;
+    display: none;
+  }
+  .scene-bg.active { display: block; }
+
+  /* Background image — covers the entire scene frame */
+  .scene-bg .bg-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  /* CSS fallback shown when no image is provided */
+  .scene-bg .bg-fallback {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* ── STREET fallback ── */
+  #bg-street .bg-fallback {
+    background: linear-gradient(180deg, #050310 0%, #0a0618 25%, #0e0820 50%, #12091a 75%, #08050f 100%);
+  }
+  #bg-street .bg-fallback::before {
+    content: '';
+    position: absolute; inset: 0;
+    /* building silhouettes */
+    background:
+      linear-gradient(180deg,#0c0818,#0c0818)   0px   0px / 60px 200px no-repeat,
+      linear-gradient(180deg,#100c20,#100c20)  55px  30px / 45px 240px no-repeat,
+      linear-gradient(180deg,#0a0615,#0a0615)  95px   0px / 80px 180px no-repeat,
+      linear-gradient(180deg,#140e22,#140e22) 170px  10px / 55px 250px no-repeat,
+      linear-gradient(180deg,#0e0a1a,#0e0a1a) 220px   0px / 40px 160px no-repeat,
+      linear-gradient(180deg,#100c1e,#100c1e) 255px  20px / 70px 210px no-repeat,
+      linear-gradient(180deg,#0c0818,#0c0818) 320px   0px / 50px 190px no-repeat,
+      linear-gradient(180deg,#140f24,#140f24) 365px  15px / 90px 260px no-repeat,
+      linear-gradient(180deg,#0a0614,#0a0614) 450px   0px / 65px 175px no-repeat,
+      linear-gradient(180deg,#0e0a1e,#0e0a1e) 510px   5px / 45px 230px no-repeat,
+      linear-gradient(180deg,#120d20,#120d20) 550px   0px / 80px 200px no-repeat,
+      linear-gradient(180deg,#100b1c,#100b1c) 625px  20px / 55px 215px no-repeat,
+      linear-gradient(180deg,#0c0816,#0c0816) 675px   0px / 75px 185px no-repeat,
+      linear-gradient(180deg,#140e22,#140e22) 745px  10px / 80px 245px no-repeat;
+    background-position-y: bottom;
+  }
+  /* neon window dots */
+  #bg-street .bg-fallback::after {
+    content: '';
+    position: absolute; bottom: 100px; left: 0; right: 0; height: 260px;
+    background-image:
+      radial-gradient(1.5px 2px at 10px 40px,  rgba(255,45,107,.9) 0%,transparent 100%),
+      radial-gradient(1.5px 2px at 18px 40px,  rgba(255,45,107,.7) 0%,transparent 100%),
+      radial-gradient(1.5px 2px at 10px 52px,  rgba(255,45,107,.5) 0%,transparent 100%),
+      radial-gradient(1.5px 2px at 18px 60px,  rgba(255,45,107,.8) 0%,transparent 100%),
+      radial-gradient(1.5px 2px at 180px 20px, rgba(0,245,255,.9)  0%,transparent 100%),
+      radial-gradient(1.5px 2px at 188px 20px, rgba(0,245,255,.6)  0%,transparent 100%),
+      radial-gradient(1.5px 2px at 196px 20px, rgba(0,245,255,.8)  0%,transparent 100%),
+      radial-gradient(1.5px 2px at 380px 15px, rgba(255,230,0,.8)  0%,transparent 100%),
+      radial-gradient(1.5px 2px at 396px 27px, rgba(255,230,0,.9)  0%,transparent 100%),
+      radial-gradient(2px   2px at 560px 10px, rgba(155,48,255,.9) 0%,transparent 100%),
+      radial-gradient(1.5px 2px at 570px 22px, rgba(155,48,255,.7) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 680px 25px, rgba(0,245,255,.7)  0%,transparent 100%),
+      radial-gradient(1px 1.5px at 700px 35px, rgba(255,45,107,.6) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 740px 40px, rgba(255,230,0,.4)  0%,transparent 100%);
+  }
+
+  /* Neon signs overlay (always rendered on top of street bg image too) */
+  .street-signs {
+    position: absolute;
+    bottom: 130px; left: 0; right: 0; height: 80px;
+    pointer-events: none; z-index: 3;
+  }
+  .street-signs .sign {
+    position: absolute;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.1em;
+    padding: 3px 8px; border: 1px solid;
+  }
+  .sign-1 {
+    bottom: 30px; left: 60px; color: var(--hot);
+    border-color: rgba(255,45,107,.5);
+    box-shadow: 0 0 8px rgba(255,45,107,.4), inset 0 0 8px rgba(255,45,107,.08);
+    text-shadow: 0 0 10px rgba(255,45,107,.8);
+    animation: sign-flicker 3.5s steps(1) infinite;
+  }
+  .sign-2 {
+    bottom: 10px; left: 230px; color: var(--cyan); font-size: 11px;
+    border-color: rgba(0,245,255,.4);
+    box-shadow: 0 0 8px rgba(0,245,255,.3), inset 0 0 8px rgba(0,245,255,.06);
+    text-shadow: 0 0 10px rgba(0,245,255,.8);
+  }
+  .sign-3 {
+    bottom: 20px; right: 140px; color: var(--yellow);
+    border-color: rgba(255,230,0,.4);
+    box-shadow: 0 0 10px rgba(255,230,0,.3);
+    text-shadow: 0 0 8px rgba(255,230,0,.9);
+    animation: sign-flicker 7s steps(1) infinite 2s;
+  }
+  @keyframes sign-flicker {
+    0%,90%,100%{opacity:1;} 91%{opacity:.1;} 93%{opacity:1;} 96%{opacity:.3;} 98%{opacity:1;}
+  }
+
+  /* ── BAR fallback ── */
+  #bg-bar .bg-fallback {
+    background: linear-gradient(180deg, #060410 0%, #0c0620 40%, #100820 70%, #0a0518 100%);
+  }
+  #bg-bar .bg-fallback::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 500px 300px at 50% 0%,  rgba(155,48,255,.12) 0%,transparent 60%),
+      radial-gradient(ellipse 200px 400px at 10% 50%, rgba(255,45,107,.07)  0%,transparent 60%),
+      radial-gradient(ellipse 200px 300px at 90% 60%, rgba(0,245,255,.06)   0%,transparent 60%);
+  }
+  #bg-bar .bg-fallback::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 140px;
+    background: linear-gradient(180deg, #120a22 0%, #0c0618 100%);
+    border-top: 2px solid rgba(155,48,255,.3);
+    box-shadow: 0 -10px 40px rgba(155,48,255,.1);
+  }
+
+  /* ── PORTRAIT LAYER ──
+     Each portrait slot holds one <img>.
+     object-fit: contain keeps the full character visible,
+     anchored to the bottom of the frame.                            */
+  #portrait-container {
+    position: absolute;
+    bottom: 0; right: 40px;
+    width: 260px; height: 400px;
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  .portrait {
+    display: none;
+    position: absolute; inset: 0;
+  }
+  .portrait.active { display: block; }
+
+  /* The actual sprite image */
+  .portrait .sprite-img {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    object-position: bottom center;
+    display: block;
+  }
+
+  /* CSS fallback sprite shown when no image URL is supplied */
+  .sprite-fallback {
+    position: absolute; inset: 0;
+  }
+
+  /* ── Kira fallback ── */
+  .char-kira .sprite-fallback .hair-side {
+    position:absolute; bottom:280px; left:calc(50% - 42px);
+    width:18px; height:50px;
+    background:linear-gradient(180deg,#1a0818,#2a0a20); border-radius:0 0 8px 8px;
+  }
+  .char-kira .sprite-fallback .hair {
+    position:absolute; bottom:310px; left:50%; transform:translateX(-50%);
+    width:66px; height:40px;
+    background:linear-gradient(160deg,#1a0818,#2a0a20); border-radius:50% 50% 20% 20%;
+  }
+  .char-kira .sprite-fallback .head {
+    position:absolute; bottom:252px; left:50%; transform:translateX(-50%);
+    width:58px; height:66px;
+    background:linear-gradient(160deg,#c8a07a,#b08860); border-radius:48% 48% 42% 42%;
+  }
+  .char-kira .sprite-fallback .augment {
+    position:absolute; bottom:281px; left:calc(50% + 6px);
+    width:28px; height:4px;
+    background:rgba(0,245,255,.7); box-shadow:0 0 8px rgba(0,245,255,.8);
+  }
+  .char-kira .sprite-fallback .eyes {
+    position:absolute; bottom:278px; left:50%; transform:translateX(-50%);
+    width:38px; display:flex; justify-content:space-between;
+  }
+  .char-kira .sprite-fallback .eye {
+    width:8px; height:7px; background:#d04080; border-radius:50%;
+    box-shadow:0 0 8px rgba(255,45,107,.9);
+  }
+  .char-kira .sprite-fallback .neck {
+    position:absolute; bottom:237px; left:50%; transform:translateX(-50%);
+    width:20px; height:20px; background:#c09878;
+  }
+  .char-kira .sprite-fallback .coat {
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:100px; height:240px;
+    background:linear-gradient(160deg,#1a0e28,#100818,#0e0614);
+    border:1px solid rgba(155,48,255,.25);
+    clip-path:polygon(12% 0%,88% 0%,100% 100%,0% 100%);
+  }
+  .char-kira .sprite-fallback .coat::before {
+    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:2px; height:100%;
+    background:linear-gradient(180deg,rgba(155,48,255,.6),transparent);
+  }
+  .char-kira .sprite-fallback .coat-stripe {
+    position:absolute; bottom:60px; left:50%; transform:translateX(-50%);
+    width:80px; height:2px;
+    background:linear-gradient(90deg,transparent,rgba(255,45,107,.7),transparent);
+  }
+  .char-kira .sprite-fallback .cyber-arm {
+    position:absolute; bottom:80px; left:calc(50% - 60px);
+    width:22px; height:120px;
+    background:linear-gradient(180deg,#1a1a2e,#0e0e20);
+    border:1px solid rgba(0,245,255,.3); box-shadow:0 0 6px rgba(0,245,255,.15);
+  }
+  .char-kira .sprite-fallback .cyber-arm::before {
+    content:''; position:absolute; top:20px; left:50%; transform:translateX(-50%);
+    width:10px; height:2px; background:rgba(0,245,255,.8);
+    box-shadow:0 8px 0 rgba(0,245,255,.6),0 16px 0 rgba(0,245,255,.4),0 24px 0 rgba(0,245,255,.7);
+  }
+
+  /* ── Ryker fallback ── */
+  .char-ryker .sprite-fallback .hair {
+    position:absolute; bottom:272px; left:50%; transform:translateX(-50%);
+    width:58px; height:18px; background:#1a1010; border-radius:50% 50% 10% 10%;
+  }
+  .char-ryker .sprite-fallback .head {
+    position:absolute; bottom:218px; left:50%; transform:translateX(-50%);
+    width:54px; height:62px;
+    background:linear-gradient(160deg,#a07858,#8a6040); border-radius:46% 46% 40% 40%;
+  }
+  .char-ryker .sprite-fallback .data-visor {
+    position:absolute; bottom:250px; left:calc(50% - 28px);
+    width:56px; height:10px;
+    background:rgba(255,107,26,.15); border:1px solid rgba(255,107,26,.4);
+    box-shadow:0 0 8px rgba(255,107,26,.3);
+  }
+  .char-ryker .sprite-fallback .eyes {
+    position:absolute; bottom:244px; left:50%; transform:translateX(-50%);
+    width:34px; display:flex; justify-content:space-between;
+  }
+  .char-ryker .sprite-fallback .eye {
+    width:7px; height:7px; background:#e06020; border-radius:50%;
+    box-shadow:0 0 5px rgba(255,107,26,.8);
+  }
+  .char-ryker .sprite-fallback .scar {
+    position:absolute; bottom:240px; left:calc(50% - 12px);
+    width:2px; height:20px; background:rgba(255,107,26,.5); transform:rotate(-5deg);
+  }
+  .char-ryker .sprite-fallback .jacket {
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:96px; height:220px;
+    background:linear-gradient(160deg,#180a08,#0e0604);
+    border:1px solid rgba(255,107,26,.2);
+    clip-path:polygon(10% 0%,90% 0%,100% 100%,0% 100%);
+  }
+  .char-ryker .sprite-fallback .jacket::before {
+    content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(180deg,transparent 0px,transparent 18px,rgba(255,107,26,.04) 18px,rgba(255,107,26,.04) 19px);
+  }
+  .char-ryker .sprite-fallback .badge {
+    position:absolute; bottom:150px; left:calc(50% + 5px);
+    width:18px; height:20px;
+    background:rgba(255,107,26,.2); border:1px solid rgba(255,107,26,.6);
+    box-shadow:0 0 6px rgba(255,107,26,.4);
+  }
+
+  /* ── ATMOSPHERIC OVERLAYS (always on top of everything) ── */
+
+  /* Animated rain */
+  #rain-canvas {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 7; opacity: 0.55;
+  }
+
+  /* Scanlines */
+  #scene-visual::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 3px);
+    pointer-events: none; z-index: 15;
+  }
+
+  /* Vignette */
+  #scene-visual::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 100% 100% at 50% 50%,transparent 50%,rgba(4,2,10,.6) 100%);
+    pointer-events: none; z-index: 14;
+  }
+
+  /* Flash */
+  #flash {
+    position: absolute; inset: 0;
+    background: var(--hot); opacity: 0;
+    pointer-events: none; z-index: 20;
+    transition: opacity 0.08s;
+  }
+
+  /* ── HUD ── */
+  #hud {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 16px;
+    background: rgba(8,6,14,.97);
+    border: 1px solid var(--border); border-bottom: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); position: relative;
+  }
+  #hud::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg,transparent,rgba(255,45,107,.3),rgba(0,245,255,.3),transparent);
+  }
+  #hud-chapter { color: var(--hot); text-shadow: 0 0 10px rgba(255,45,107,.5); }
+  .hbar-wrap { display:flex; align-items:center; gap:8px; }
+  .hbar { width:84px; height:3px; background:rgba(255,255,255,.06); }
+  .hbar-fill { height:100%; width:100%; transition:width .5s,background .5s; }
+
+  /* ── DIALOGUE PANEL ── */
+  #dialogue-panel {
+    background: var(--panel);
+    border: 1px solid var(--border); border-top: none;
+    padding: 0; min-height: 164px; cursor: pointer; position: relative; overflow: hidden;
+  }
+  #dialogue-panel::before {
+    content: ''; position: absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,rgba(255,45,107,.5),rgba(0,245,255,.4),transparent);
+  }
+  #dialogue-inner { padding: 18px 26px 16px; }
+
+  #speaker-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--hot); margin-bottom: 8px; min-height: 18px;
+    text-shadow: 0 0 12px rgba(255,45,107,.6); position: relative;
+  }
+  #speaker-name::after {
+    content: ''; position:absolute; left:0; bottom:-3px; width:100%; height:1px;
+    background: linear-gradient(90deg,rgba(255,45,107,.5),transparent);
+  }
+
+  #dialogue-text {
+    font-size: 18px; font-weight: 400; line-height: 1.6;
+    color: var(--text); min-height: 58px; white-space: pre-wrap; margin-top: 6px;
+  }
+
+  #continue-hint {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); text-align: right; margin-top: 10px;
+    visibility: hidden; animation: blink 1.2s ease-in-out infinite;
+  }
+  #continue-hint.visible { visibility: visible; }
+  @keyframes blink { 0%,100%{opacity:.8;} 50%{opacity:.2;} }
+
+  /* ── CHOICES ── */
+  #choice-panel {
+    display: none; padding: 10px 16px 14px;
+    background: var(--panel2); border: 1px solid var(--border);
+    border-top: 1px solid rgba(255,45,107,.15);
+    gap: 7px; flex-direction: column;
+  }
+  #choice-panel.active { display: flex; }
+  .choice-btn {
+    background: rgba(255,45,107,.04); border: 1px solid rgba(255,45,107,.2);
+    color: var(--text); font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 500; letter-spacing: 0.05em;
+    padding: 9px 16px; cursor: pointer; text-align: left; transition: all .15s;
+    position: relative; overflow: hidden;
+  }
+  .choice-btn::before {
+    content: ''; position:absolute; left:0; top:0; bottom:0; width:2px;
+    background: var(--hot); transform: scaleY(0); transition: transform .15s;
+  }
+  .choice-btn:hover {
+    background: rgba(255,45,107,.09); border-color: rgba(255,45,107,.5);
+    color: #fff; padding-left: 24px; box-shadow: inset 0 0 20px rgba(255,45,107,.05);
+  }
+  .choice-btn:hover::before { transform: scaleY(1); }
+
+  /* ── QTE OVERLAY ── */
+  #qte-overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(4,2,12,.92); z-index: 30;
+    flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  }
+  #qte-overlay.active { display: flex; }
+  #qte-overlay::before {
+    content: ''; position:absolute; inset:0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,45,107,.02) 2px,rgba(255,45,107,.02) 3px);
+    pointer-events: none;
+  }
+  #qte-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.4em; color: var(--muted); text-transform: uppercase;
+  }
+  #qte-prompt {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 30px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #fff; text-align: center; text-shadow: 0 0 20px rgba(255,45,107,.7);
+  }
+  #qte-key {
+    width:78px; height:78px; border:2px solid var(--cyan);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Barlow Condensed',sans-serif; font-size:34px; font-weight:700;
+    color:var(--cyan);
+    box-shadow:0 0 24px rgba(0,245,255,.5),inset 0 0 16px rgba(0,245,255,.08);
+    animation:qte-pulse .65s ease-in-out infinite;
+    text-shadow:0 0 12px var(--cyan);
+  }
+  @keyframes qte-pulse {
+    0%,100%{box-shadow:0 0 20px rgba(0,245,255,.4),inset 0 0 12px rgba(0,245,255,.06);}
+    50%{box-shadow:0 0 44px rgba(0,245,255,.85),inset 0 0 24px rgba(0,245,255,.15);}
+  }
+  #qte-bar-wrap { width:360px; height:6px; background:rgba(255,255,255,.06); }
+  #qte-bar { height:100%; width:100%; background:linear-gradient(90deg,var(--cyan),var(--hot)); }
+  #qte-mash-section { display:none; flex-direction:column; align-items:center; gap:10px; }
+  #qte-mash-section.active { display:flex; }
+  #qte-mash-hint {
+    font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600;
+    letter-spacing:.15em; color:var(--muted); text-transform:uppercase;
+  }
+  #qte-mash-bar-wrap {
+    width:360px; height:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,45,107,.2);
+  }
+  #qte-mash-bar {
+    height:100%; width:0%;
+    background:linear-gradient(90deg,var(--hot),var(--yellow));
+    transition:width .05s; box-shadow:0 0 10px rgba(255,45,107,.4);
+  }
+  #qte-result {
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:28px; font-weight:700; letter-spacing:.25em; text-transform:uppercase;
+    opacity:0; transition:opacity .25s;
+  }
+  #qte-result.success { color:var(--cyan); text-shadow:0 0 20px rgba(0,245,255,.8); }
+  #qte-result.fail    { color:var(--hot);  text-shadow:0 0 20px rgba(255,45,107,.8); }
+
+  /* ── TITLE SCREEN ── */
+  #title-screen {
+    position:absolute; inset:0; background:var(--bg); z-index:50;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; padding:40px; overflow:hidden;
+  }
+  #title-screen::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 600px 400px at 50% 40%,rgba(155,48,255,.08) 0%,transparent 60%),
+      radial-gradient(ellipse 300px 200px at 20% 80%,rgba(255,45,107,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 200px 300px at 80% 20%,rgba(0,245,255,.04)  0%,transparent 60%);
+    pointer-events:none;
+  }
+  #title-screen .title-tag {
+    font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:600;
+    letter-spacing:.45em; color:var(--muted); text-transform:uppercase; position:relative; z-index:1;
+  }
+  #title-screen h1 {
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:52px; font-weight:700; letter-spacing:.1em; text-align:center; line-height:1.1;
+    color:#fff; text-shadow:0 0 40px rgba(255,45,107,.5),0 0 80px rgba(255,45,107,.2);
+    position:relative; z-index:1; animation:title-glitch 6s steps(1) infinite;
+  }
+  @keyframes title-glitch {
+    0%,88%,100%{text-shadow:0 0 40px rgba(255,45,107,.5),0 0 80px rgba(255,45,107,.2);}
+    89%{text-shadow:4px 0 0 rgba(0,245,255,1),-4px 0 0 rgba(255,45,107,1);transform:skewX(8deg);}
+    90%{text-shadow:-3px 0 0 rgba(0,245,255,.8);transform:skewX(-4deg);}
+    91%{text-shadow:0 0 40px rgba(255,45,107,.5);transform:none;}
+    95%{text-shadow:2px 0 0 rgba(155,48,255,.9),-2px 0 0 rgba(255,45,107,.9);}
+    96%{text-shadow:0 0 40px rgba(255,45,107,.5);}
+  }
+  #title-screen .subtitle {
+    font-size:16px; font-weight:400; color:var(--muted); font-style:italic;
+    text-align:center; max-width:420px; line-height:1.65; position:relative; z-index:1;
+  }
+  #title-screen .title-divider {
+    width:200px; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,45,107,.6),rgba(0,245,255,.5),transparent);
+    margin:4px 0;
+  }
+  #start-btn {
+    margin-top:16px; background:transparent;
+    border:1px solid rgba(255,45,107,.6); color:var(--hot);
+    font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700;
+    letter-spacing:.28em; text-transform:uppercase; padding:12px 44px;
+    cursor:pointer; transition:all .2s; position:relative; z-index:1;
+    text-shadow:0 0 8px rgba(255,45,107,.5);
+  }
+  #start-btn:hover {
+    background:rgba(255,45,107,.1);
+    box-shadow:0 0 24px rgba(255,45,107,.3),inset 0 0 12px rgba(255,45,107,.06);
+    letter-spacing:.32em;
+  }
+
+  /* ── END SCREEN ── */
+  #end-screen {
+    display:none; position:absolute; inset:0; background:var(--bg); z-index:50;
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; text-align:center; padding:50px;
+  }
+  #end-screen.active { display:flex; }
+  #end-tag  { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:.4em; color:var(--muted); text-transform:uppercase; }
+  #end-title { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:700; letter-spacing:.12em; }
+  #end-summary { font-size:17px; color:var(--muted); font-style:italic; max-width:480px; line-height:1.75; }
+  #replay-btn {
+    margin-top:22px; background:transparent; border:1px solid var(--border); color:var(--text);
+    font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600;
+    letter-spacing:.2em; text-transform:uppercase; padding:10px 28px;
+    cursor:pointer; transition:all .2s;
+  }
+  #replay-btn:hover { border-color:var(--hot); color:var(--hot); }
+
+  /* Typewriter cursor */
+  .cursor {
+    display:inline-block; width:2px; height:1em; background:var(--hot);
+    margin-left:2px; vertical-align:text-bottom;
+    animation:cur-blink .5s step-end infinite;
+    box-shadow:0 0 6px rgba(255,45,107,.7);
+  }
+  @keyframes cur-blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+</style>
+</head>
+<body>
+<div id="game">
+
+  <!-- ══ TITLE ══════════════════════════════════════════════ -->
+  <div id="title-screen">
+    <div class="title-tag">A Visual Novel with Quick Time Events</div>
+    <h1>NEON<br>FRACTURE</h1>
+    <div class="title-divider"></div>
+    <p class="subtitle">The city never sleeps. Neither do its secrets. You've got one night to find who wants you dead.</p>
+    <button id="start-btn" onclick="startGame()">▸ JACK IN</button>
+  </div>
+
+  <!-- ══ END ════════════════════════════════════════════════ -->
+  <div id="end-screen">
+    <div id="end-tag">Case Closed</div>
+    <div id="end-title"></div>
+    <div id="end-summary"></div>
+    <button id="replay-btn" onclick="replay()">▸ Replay</button>
+  </div>
+
+  <!-- ══ HUD ════════════════════════════════════════════════ -->
+  <div id="hud">
+    <span id="hud-chapter">ACT 01 // NEON DISTRICT</span>
+    <div class="hbar-wrap">
+      <span>VITALS</span>
+      <div class="hbar"><div class="hbar-fill" id="hbar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCENE ══════════════════════════════════════════════ -->
+  <div id="scene-visual">
+
+    <!-- ── BACKGROUND: STREET ──────────────────────────────
+         To use a real image: set --img-bg-street in :root   
+         OR swap the src attribute on the <img> below.       
+         The .bg-fallback div is hidden once the img loads.  -->
+    <div class="scene-bg active" id="bg-street">
+      <!-- IMAGE SLOT: replace '' with your image path/URL -->
+      <img class="bg-img" id="img-bg-street" src="" alt=""
+           onerror="this.style.display='none'"
+           onload="this.nextElementSibling.style.display='none'">
+      <!-- CSS fallback (hidden when image loads) -->
+      <div class="bg-fallback"></div>
+      <!-- Neon signs overlay — shown regardless of bg type -->
+      <div class="street-signs">
+        <div class="sign sign-1">酒場 BAR-7</div>
+        <div class="sign sign-2">// NETLINK NODE 4 //</div>
+        <div class="sign sign-3">電脳 DATASYNC</div>
+      </div>
+    </div>
+
+    <!-- ── BACKGROUND: BAR ─────────────────────────────────
+         IMAGE SLOT: replace '' with your image path/URL     -->
+    <div class="scene-bg" id="bg-bar">
+      <img class="bg-img" id="img-bg-bar" src="" alt=""
+           onerror="this.style.display='none'"
+           onload="this.nextElementSibling.style.display='none'">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <!-- ── RAIN (canvas, always on top) ──────────────────── -->
+    <canvas id="rain-canvas"></canvas>
+
+    <!-- ── CHARACTER PORTRAITS ────────────────────────────
+         IMAGE SLOT: replace '' with your sprite path/URL.
+         Use transparent PNG for best results.
+         The .sprite-fallback is hidden when the img loads. -->
+    <div id="portrait-container">
+
+      <!-- KIRA sprite -->
+      <div class="portrait char-kira" id="portrait-kira">
+        <!-- IMAGE SLOT -->
+        <img class="sprite-img" id="img-sprite-kira" src="" alt="Kira"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
+             onload="this.nextElementSibling.style.display='none'">
+        <!-- CSS fallback -->
+        <div class="sprite-fallback">
+          <div class="hair-side"></div>
+          <div class="hair"></div>
+          <div class="head">
+            <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+            <div class="augment"></div>
+          </div>
+          <div class="neck"></div>
+          <div class="coat"><div class="coat-stripe"></div></div>
+          <div class="cyber-arm"></div>
+        </div>
+      </div>
+
+      <!-- RYKER sprite -->
+      <div class="portrait char-ryker" id="portrait-ryker">
+        <!-- IMAGE SLOT -->
+        <img class="sprite-img" id="img-sprite-ryker" src="" alt="Ryker"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
+             onload="this.nextElementSibling.style.display='none'">
+        <!-- CSS fallback -->
+        <div class="sprite-fallback">
+          <div class="hair"></div>
+          <div class="head">
+            <div class="data-visor"></div>
+            <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+            <div class="scar"></div>
+          </div>
+          <div class="jacket"><div class="badge"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /portrait-container -->
+
+    <!-- QTE -->
+    <div id="qte-overlay">
+      <div id="qte-label">— QUICK TIME EVENT —</div>
+      <div id="qte-prompt">ACT NOW!</div>
+      <div id="qte-key">E</div>
+      <div id="qte-bar-wrap"><div id="qte-bar"></div></div>
+      <div id="qte-mash-section">
+        <div id="qte-mash-hint">Mash [SPACE] or tap to fill!</div>
+        <div id="qte-mash-bar-wrap"><div id="qte-mash-bar"></div></div>
+      </div>
+      <div id="qte-result"></div>
+    </div>
+
+    <div id="flash"></div>
+  </div><!-- /scene-visual -->
+
+  <!-- ══ DIALOGUE ═══════════════════════════════════════════ -->
+  <div id="dialogue-panel">
+    <div id="dialogue-inner">
+      <div id="speaker-name"></div>
+      <div id="dialogue-text"></div>
+      <div id="continue-hint">[ tap or space to continue ]</div>
+    </div>
+  </div>
+
+  <!-- ══ CHOICES ════════════════════════════════════════════ -->
+  <div id="choice-panel"></div>
+
+</div><!-- /game -->
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  IMAGE CONFIGURATION
+//  Set paths/URLs here to swap in real backgrounds & sprites.
+//  Leave a value as '' to use the built-in CSS fallback.
+// ════════════════════════════════════════════════════════════
+const IMAGES = {
+  backgrounds: {
+    street: '',   // e.g. 'images/street_night.jpg'
+    bar:    '',   // e.g. 'images/bar_interior.jpg'
+  },
+  sprites: {
+    kira:  '',    // e.g. 'images/kira_neutral.png'
+    ryker: '',    // e.g. 'images/ryker_neutral.png'
+  }
+};
+
+// Apply image sources on load
+(function applyImages() {
+  for (const [key, src] of Object.entries(IMAGES.backgrounds)) {
+    const el = document.getElementById('img-bg-' + key);
+    if (el && src) el.src = src;
+  }
+  for (const [key, src] of Object.entries(IMAGES.sprites)) {
+    const el = document.getElementById('img-sprite-' + key);
+    if (el && src) el.src = src;
+  }
+})();
+
+// ── Rain ─────────────────────────────────────────────────────
+const rainCanvas = document.getElementById('rain-canvas');
+const rctx = rainCanvas.getContext('2d');
+let drops = [];
+
+function initRain() {
+  rainCanvas.width = 820; rainCanvas.height = 430;
+  drops = [];
+  for (let i = 0; i < 120; i++) {
+    drops.push({ x: Math.random()*820, y: Math.random()*430, len: 8+Math.random()*18, speed: 6+Math.random()*10, opacity: 0.1+Math.random()*0.35 });
+  }
+}
+function drawRain() {
+  rctx.clearRect(0,0,820,430);
+  drops.forEach(d => {
+    rctx.beginPath();
+    rctx.strokeStyle = `rgba(140,180,240,${d.opacity})`;
+    rctx.lineWidth = 0.6;
+    rctx.moveTo(d.x, d.y);
+    rctx.lineTo(d.x-1, d.y+d.len);
+    rctx.stroke();
+    d.y += d.speed;
+    if (d.y > 430) { d.y = -20; d.x = Math.random()*820; }
+  });
+  requestAnimationFrame(drawRain);
+}
+initRain(); drawRain();
+
+// ── State ─────────────────────────────────────────────────────
+let health=100, gameFlags={}, currentNode=null;
+let typing=false, typeTimer=null, waitingForInput=false;
+let qteActive=false, qteTimeoutId=null, mashValue=0, mashDecayId=null;
+let pendingCallback=null;
+
+// ── Story ─────────────────────────────────────────────────────
+const story = {
+  start: {
+    bg:'street', portrait:null, speaker:null,
+    text:"NEON DISTRICT. 02:47. Rain hasn't stopped in six days.\n\nYou are KIRA VALE — augmented investigator, no badge, no corp affiliation. Someone put a hit out on you tonight. You don't know who. Yet.",
+    next:'n1'
+  },
+  n1: {
+    bg:'street', portrait:'kira', speaker:'KIRA VALE',
+    text:"My neural feed pinged a contact thirty minutes ago. Ryker — a fixer I trust about as far as I can throw a cargo drone. But right now, he's all I've got.",
+    next:'n2'
+  },
+  n2: {
+    bg:'street', portrait:null, speaker:'COMMS — RYKER',
+    text:"You alive, Vale? Three of Yashida's street-sec just cleared the block heading your way. They're not looking to chat.",
+    next:'n3'
+  },
+  n3: {
+    bg:'street', portrait:'kira', speaker:'KIRA VALE',
+    text:"I spot them rounding the corner under the Datasync sign. Augmented muscle — subdermal plating, reflex mods. One of them has already clocked me.",
+    next:'choice1'
+  },
+  choice1: {
+    bg:'street', portrait:'kira', speaker:null,
+    text:"The lead sec-thug breaks into a sprint. You have a second to react.",
+    choices:[
+      { text:"Sprint for the alley — lose them in the dark.", next:'n4_run' },
+      { text:"Hold your ground. Show them your augment.",     next:'n4_stand' }
+    ]
+  },
+  n4_run: {
+    bg:'street', portrait:'kira', speaker:'KIRA VALE',
+    text:"You bolt. The neon smears past you in streaks of hot pink and cold blue. The first one is fast — too fast. He's got speed mods.",
+    next:'qte1'
+  },
+  n4_stand: {
+    bg:'street', portrait:'kira', speaker:'KIRA VALE',
+    text:"You raise your cyber-arm, let the segmented plating splay open. Blue light pulses from the emitters.\n\nThey slow. Hesitate. Corp sec hates the unknown.\n\nThat's enough. You walk — calmly — into the bar.",
+    next:'n5'
+  },
+  qte1: {
+    bg:'street', portrait:null, speaker:null,
+    text:"He grabs for your coat —",
+    qte:{ type:'press', key:'E', duration:2000, prompt:'BREAK FREE — PRESS [E]', successNode:'qte1_ok', failNode:'qte1_bad' }
+  },
+  qte1_ok: {
+    bg:'street', portrait:'kira', speaker:'KIRA VALE',
+    text:"You twist hard. His grip breaks. You crack an elbow into his visor — the glass spiderwebs — and you're gone, swallowed by the alley dark.",
+    next:'n5', flag:{ brokeFree:true }
+  },
+  qte1_bad: {
+    bg:'street', portrait:'kira', speaker:'KIRA VALE',
+    text:"He gets hold of you. You tear free but he takes a strip of your coat — and draws blood. You hit the alley wall and push hard. Vitals down.",
+    next:'n5', damage:28
+  },
+  n5: {
+    bg:'bar', portrait:null, speaker:null,
+    text:"Bar-7. The kind of place that doesn't ask questions and doesn't have cameras. Smells like synth-whisky and bad decisions.",
+    next:'n6'
+  },
+  n6: {
+    bg:'bar', portrait:'ryker', speaker:'RYKER',
+    text:"You look worse than your feed. Sit down. I pulled the contract — anonymous, 80,000 cred, paid in ghost-coin. But the routing tag... it's Yashida Dynamics. Internal division.",
+    next:'n7'
+  },
+  n7: {
+    bg:'bar', portrait:'kira', speaker:'KIRA VALE',
+    text:"Yashida. Three years ago I pulled data from their black-site server farm for a client who turned out to be their own dissident faction. Apparently they have a long memory.",
+    next:'n8'
+  },
+  n8: {
+    bg:'bar', portrait:'ryker', speaker:'RYKER',
+    text:"There's a way out. Yashida's data vault — the one that holds the original contract — is in their sub-district tower. Wipe your file, you're a ghost. But you'll need their access cipher first.\n\nI can get it. But I need something in return.",
+    next:'choice2'
+  },
+  choice2: {
+    bg:'bar', portrait:'kira', speaker:null,
+    text:"Ryker slides a datachip across the bar. His eyes don't leave yours.",
+    choices:[
+      { text:"Take the chip. Ask questions later.",          next:'qte2_setup' },
+      { text:"Push back. Demand to know what's on it.",     next:'n9_push'    }
+    ]
+  },
+  n9_push: {
+    bg:'bar', portrait:'ryker', speaker:'RYKER',
+    text:"He exhales. \"Client data. Encrypted. I don't even know what's on it — and that's the truth. All I know is the drop point is the Axiom tower lobby. 0400.\"\n\nYou believe him. Ryker lies about a lot. But not about the things that could get him killed.",
+    next:'qte2_setup'
+  },
+  qte2_setup: {
+    bg:'bar', portrait:'kira', speaker:'KIRA VALE',
+    text:"You take the chip. The moment it slots into your palm-port, the bar's lights cut out. Someone triggered a blackout.",
+    next:'qte2'
+  },
+  qte2: {
+    bg:'bar', portrait:null, speaker:null,
+    text:"IN THE DARK — THEY'RE MOVING IN —",
+    qte:{ type:'mash', key:' ', duration:4000, prompt:'CHARGE YOUR AUGMENT — MASH [SPACE]!', threshold:70, successNode:'end_ghost', failNode:'end_burned' }
+  },
+  end_ghost: {
+    isEnd:true,
+    title:'◈ ENDING: GHOST IN THE WIRE',
+    summary:"Your augment discharges — a pulse of blue light that drops every cybernetic in the room. You walk out through the stunned bodies. By 0500 your file is gone from Yashida's vault. You're a ghost. For now.",
+    color:'var(--cyan)'
+  },
+  end_burned: {
+    isEnd:true,
+    title:'✖ ENDING: BURNED',
+    summary:"The augment sputters. They get to you before the charge builds. You wake up zip-tied in a Yashida sub-facility, the chip gone, Ryker's line dead. The city won this round.",
+    color:'var(--hot)'
+  }
+};
+
+// ── Engine ─────────────────────────────────────────────────
+function startGame() {
+  document.getElementById('title-screen').style.display='none';
+  health=100; gameFlags={}; updateHealth(); goTo('start');
+}
+function replay() {
+  document.getElementById('end-screen').classList.remove('active'); startGame();
+}
+
+function goTo(id) {
+  const node = story[id];
+  if (!node) return;
+  currentNode = id;
+  if (node.isEnd) { showEnd(node); return; }
+  if (node.damage) { health=Math.max(0,health-node.damage); updateHealth(); flashScreen(); }
+  if (node.flag) Object.assign(gameFlags, node.flag);
+  if (node.bg) setBackground(node.bg);
+  setPortrait(node.portrait||null);
+  setSpeaker(node.speaker||null);
+  document.getElementById('choice-panel').classList.remove('active');
+  document.getElementById('choice-panel').innerHTML='';
+  if (node.qte)          showDialogue(node.text,()=>triggerQTE(node.qte));
+  else if (node.choices) showDialogue(node.text,()=>showChoices(node.choices));
+  else                   showDialogue(node.text,()=>waitForClick(node.next));
+}
+
+function setBackground(name) {
+  document.querySelectorAll('.scene-bg').forEach(e=>e.classList.remove('active'));
+  const el = document.getElementById('bg-'+name);
+  if (el) el.classList.add('active');
+  const labels = { street:'ACT 01 // NEON DISTRICT', bar:'ACT 02 // BAR-7, UNDERGROUND' };
+  document.getElementById('hud-chapter').textContent = labels[name]||'';
+}
+
+function setPortrait(name) {
+  document.querySelectorAll('.portrait').forEach(p=>p.classList.remove('active'));
+  if (name) { const el=document.getElementById('portrait-'+name); if(el) el.classList.add('active'); }
+}
+
+function setSpeaker(name) {
+  const el = document.getElementById('speaker-name');
+  el.textContent = name||'';
+  if (name&&name.includes('RYKER'))      el.style.color='var(--orange)';
+  else if (name&&name.includes('COMMS')) el.style.color='var(--purple)';
+  else                                   el.style.color='var(--hot)';
+}
+
+function showDialogue(text, callback) {
+  const el = document.getElementById('dialogue-text');
+  document.getElementById('continue-hint').classList.remove('visible');
+  el.innerHTML='';
+  if (typeTimer) clearTimeout(typeTimer);
+  typing=true; waitingForInput=false; pendingCallback=callback;
+  let i=0; const chars=[...text];
+  const cursor=document.createElement('span'); cursor.className='cursor';
+  el.appendChild(cursor);
+  function tick() {
+    if (i<chars.length) {
+      el.insertBefore(document.createTextNode(chars[i]),cursor); i++; el.appendChild(cursor);
+      typeTimer=setTimeout(tick, chars[i-1]==='\n'?50:22);
+    } else { typing=false; cursor.remove(); if(callback) callback(); }
+  }
+  tick();
+}
+
+function skipTyping() {
+  if (!typing) return;
+  clearTimeout(typeTimer); typing=false;
+  const el=document.getElementById('dialogue-text');
+  const c=el.querySelector('.cursor'); if(c) c.remove();
+  el.textContent=story[currentNode].text||'';
+  if (pendingCallback) { const cb=pendingCallback; pendingCallback=null; cb(); }
+}
+
+function waitForClick(nextId) {
+  document.getElementById('continue-hint').classList.add('visible');
+  waitingForInput=true; window._nextClickId=nextId;
+}
+
+function showChoices(choices) {
+  const panel=document.getElementById('choice-panel');
+  panel.innerHTML='';
+  choices.forEach(c=>{
+    const btn=document.createElement('button'); btn.className='choice-btn'; btn.textContent=c.text;
+    btn.onclick=()=>{ panel.classList.remove('active'); goTo(c.next); };
+    panel.appendChild(btn);
+  });
+  panel.classList.add('active');
+}
+
+function flashScreen() {
+  const f=document.getElementById('flash'); f.style.opacity='0.45';
+  setTimeout(()=>f.style.opacity='0',120);
+}
+
+function updateHealth() {
+  const f=document.getElementById('hbar-fill'); f.style.width=health+'%';
+  f.style.background=health>60?'var(--cyan)':health>30?'var(--yellow)':'var(--hot)';
+}
+
+// ── QTE ──────────────────────────────────────────────────────
+function triggerQTE(qte) {
+  qteActive=true;
+  const overlay=document.getElementById('qte-overlay');
+  const keyEl=document.getElementById('qte-key');
+  const barWrap=document.getElementById('qte-bar-wrap');
+  const bar=document.getElementById('qte-bar');
+  const mashSec=document.getElementById('qte-mash-section');
+  const mashBar=document.getElementById('qte-mash-bar');
+  const result=document.getElementById('qte-result');
+  const prompt=document.getElementById('qte-prompt');
+  result.textContent=''; result.className=''; result.style.opacity='0';
+  prompt.textContent=qte.prompt||'ACT NOW!';
+  overlay.classList.add('active');
+
+  if (qte.type==='press') {
+    keyEl.style.display='flex'; keyEl.textContent=qte.key;
+    barWrap.style.display='block'; mashSec.classList.remove('active');
+    bar.style.transition='none'; bar.style.width='100%'; void bar.offsetWidth;
+    bar.style.transition=`width ${qte.duration}ms linear`; bar.style.width='0%';
+    let done=false;
+    const onKey=e=>{ if(!done&&e.key.toUpperCase()===qte.key.toUpperCase()){done=true;finish(true);} };
+    const onTap=()=>{ if(!done){done=true;finish(true);} };
+    document.addEventListener('keydown',onKey); overlay.addEventListener('click',onTap);
+    qteTimeoutId=setTimeout(()=>{if(!done){done=true;finish(false);}},qte.duration);
+    function finish(ok){
+      clearTimeout(qteTimeoutId); document.removeEventListener('keydown',onKey);
+      overlay.removeEventListener('click',onTap); bar.style.transition='none'; resolveQTE(ok,qte);
+    }
+
+  } else if (qte.type==='mash') {
+    keyEl.style.display='none'; barWrap.style.display='none';
+    mashSec.classList.add('active'); mashValue=0; mashBar.style.width='0%';
+    const onKey=e=>{ if(e.key===' '||e.key==='Enter'){e.preventDefault();mashValue=Math.min(100,mashValue+7);mashBar.style.width=mashValue+'%';} };
+    const onTap=()=>{ mashValue=Math.min(100,mashValue+7); mashBar.style.width=mashValue+'%'; };
+    document.addEventListener('keydown',onKey); overlay.addEventListener('click',onTap);
+    mashDecayId=setInterval(()=>{ mashValue=Math.max(0,mashValue-1.4); mashBar.style.width=mashValue+'%'; },80);
+    qteTimeoutId=setTimeout(()=>{
+      clearInterval(mashDecayId); document.removeEventListener('keydown',onKey);
+      overlay.removeEventListener('click',onTap);
+      resolveQTE(mashValue>=(qte.threshold||70),qte);
+    },qte.duration);
+  }
+}
+
+function resolveQTE(ok,qte) {
+  const result=document.getElementById('qte-result');
+  const overlay=document.getElementById('qte-overlay');
+  result.textContent=ok?'JACKED IN':'FLATLINED';
+  result.className=ok?'success':'fail'; result.style.opacity='1';
+  flashScreen();
+  setTimeout(()=>{ overlay.classList.remove('active'); qteActive=false; goTo(ok?qte.successNode:qte.failNode); },950);
+}
+
+function showEnd(node) {
+  document.getElementById('end-title').textContent=node.title;
+  document.getElementById('end-title').style.color=node.color;
+  document.getElementById('end-summary').textContent=node.summary;
+  document.getElementById('end-screen').classList.add('active');
+}
+
+// ── Input ────────────────────────────────────────────────────
+document.getElementById('dialogue-panel').addEventListener('click',handleAdvance);
+document.addEventListener('keydown',e=>{ if(e.key===' '&&!qteActive){e.preventDefault();handleAdvance();} });
+
+function handleAdvance() {
+  if (qteActive) return;
+  if (typing) { skipTyping(); return; }
+  if (waitingForInput&&window._nextClickId) {
+    const id=window._nextClickId; window._nextClickId=null; waitingForInput=false;
+    document.getElementById('continue-hint').classList.remove('visible'); goTo(id);
+  }
+}
+</script>
+</body>
+</html>
