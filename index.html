@@ -3,61 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEON FRACTURE // Visual Novel</title>
+<title>Kazki's Backstory</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap');
 
-  /* ================================================================
-     IMAGE SLOTS — swap these URLs to change backgrounds / characters
-     ================================================================ */
   :root {
-    /* --- BACKGROUND IMAGES ---
-       Recommended size: 820×430px, any aspect ratio works (cover-fit)
-       Leave as '' to show the CSS fallback colour instead            */
-    --img-bg-street: '';   /* e.g. url('images/street.jpg')  */
-    --img-bg-bar:    '';   /* e.g. url('images/bar.jpg')     */
-
-    /* --- CHARACTER SPRITE IMAGES ---
-       Recommended: transparent PNG, portrait orientation (~400px tall)
-       Leave as '' to hide the sprite slot entirely                   */
-    --img-sprite-kira:  '';  /* e.g. url('images/kira.png')  */
-    --img-sprite-ryker: '';  /* e.g. url('images/ryker.png') */
-
-    /* ── Palette ── */
-    --bg:       #08060e;
-    --panel:    #0d0b16;
-    --panel2:   #100e1a;
-    --border:   #1e1830;
-    --hot:      #ff2d6b;
-    --cyan:     #00f5ff;
-    --yellow:   #ffe600;
-    --purple:   #9b30ff;
-    --orange:   #ff6b1a;
-    --text:     #d0c8e8;
-    --muted:    #4a3f60;
+    /* PM Color Palette — deep burgundy, ash white, faded gold, black ink */
+    --bg:        #0a0808;
+    --panel:     #100c0c;
+    --panel2:    #130e0e;
+    --border:    #2a1e1e;
+    --accent:    #c8803a;   /* worn amber / faded gold */
+    --accent2:   #8b3a3a;   /* dark blood red */
+    --accent3:   #a09070;   /* parchment gold */
+    --pale:      #d4c8b8;   /* ash white text */
+    --muted:     #5a4a40;
+    --shadow:    #1e0a0a;
+    --white:     #ede8e0;
+    --danger:    #c83030;
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
     background: var(--bg);
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 19px;
+    color: var(--pale);
+    font-family: 'IM Fell English', serif;
+    font-size: 18px;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     overflow: hidden;
     cursor: default;
   }
 
-  /* Noise grain */
+  /* Grain overlay */
   body::before {
     content: '';
     position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 999; opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.6;
   }
 
   #game {
@@ -75,325 +59,261 @@
     overflow: hidden;
     border: 1px solid var(--border);
     border-bottom: none;
-    background: #050310; /* base fallback */
+    background: #060404;
   }
 
-  /* ── BACKGROUND LAYER ──
-     Each .scene-bg holds one <img> that covers the full frame.
-     The img is hidden when no src is set (handled in JS).            */
-  .scene-bg {
-    position: absolute; inset: 0;
-    display: none;
-  }
+  /* Background layers */
+  .scene-bg { position: absolute; inset: 0; display: none; }
   .scene-bg.active { display: block; }
+  .scene-bg .bg-fallback { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-  /* Background image — covers the entire scene frame */
-  .scene-bg .bg-img {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
+  /* Alley background */
+  #bg-alley .bg-fallback {
+    background: linear-gradient(180deg, #050304 0%, #0a0606 30%, #0e0808 60%, #080404 100%);
   }
-
-  /* CSS fallback shown when no image is provided */
-  .scene-bg .bg-fallback {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-  }
-
-  /* ── STREET fallback ── */
-  #bg-street .bg-fallback {
-    background: linear-gradient(180deg, #050310 0%, #0a0618 25%, #0e0820 50%, #12091a 75%, #08050f 100%);
-  }
-  #bg-street .bg-fallback::before {
+  #bg-alley .bg-fallback::before {
     content: '';
     position: absolute; inset: 0;
-    /* building silhouettes */
     background:
-      linear-gradient(180deg,#0c0818,#0c0818)   0px   0px / 60px 200px no-repeat,
-      linear-gradient(180deg,#100c20,#100c20)  55px  30px / 45px 240px no-repeat,
-      linear-gradient(180deg,#0a0615,#0a0615)  95px   0px / 80px 180px no-repeat,
-      linear-gradient(180deg,#140e22,#140e22) 170px  10px / 55px 250px no-repeat,
-      linear-gradient(180deg,#0e0a1a,#0e0a1a) 220px   0px / 40px 160px no-repeat,
-      linear-gradient(180deg,#100c1e,#100c1e) 255px  20px / 70px 210px no-repeat,
-      linear-gradient(180deg,#0c0818,#0c0818) 320px   0px / 50px 190px no-repeat,
-      linear-gradient(180deg,#140f24,#140f24) 365px  15px / 90px 260px no-repeat,
-      linear-gradient(180deg,#0a0614,#0a0614) 450px   0px / 65px 175px no-repeat,
-      linear-gradient(180deg,#0e0a1e,#0e0a1e) 510px   5px / 45px 230px no-repeat,
-      linear-gradient(180deg,#120d20,#120d20) 550px   0px / 80px 200px no-repeat,
-      linear-gradient(180deg,#100b1c,#100b1c) 625px  20px / 55px 215px no-repeat,
-      linear-gradient(180deg,#0c0816,#0c0816) 675px   0px / 75px 185px no-repeat,
-      linear-gradient(180deg,#140e22,#140e22) 745px  10px / 80px 245px no-repeat;
+      linear-gradient(180deg,#0c0808,#0c0808)  0px    0px / 55px 280px no-repeat,
+      linear-gradient(180deg,#110a0a,#110a0a)  50px   20px / 40px 310px no-repeat,
+      linear-gradient(180deg,#0a0606,#0a0606)  85px   0px  / 70px 260px no-repeat,
+      linear-gradient(180deg,#150c0c,#150c0c)  150px  10px / 50px 320px no-repeat,
+      linear-gradient(180deg,#0e0808,#0e0808)  195px  0px  / 45px 240px no-repeat,
+      linear-gradient(180deg,#120a0a,#120a0a)  235px  15px / 65px 290px no-repeat,
+      linear-gradient(180deg,#0a0606,#0a0606)  295px  0px  / 55px 270px no-repeat,
+      linear-gradient(180deg,#160e0e,#160e0e)  345px  8px  / 85px 335px no-repeat,
+      linear-gradient(180deg,#0c0808,#0c0808)  425px  0px  / 60px 255px no-repeat,
+      linear-gradient(180deg,#100a0a,#100a0a)  480px  5px  / 42px 305px no-repeat,
+      linear-gradient(180deg,#130b0b,#130b0b)  520px  0px  / 75px 275px no-repeat,
+      linear-gradient(180deg,#0e0808,#0e0808)  590px  18px / 50px 285px no-repeat,
+      linear-gradient(180deg,#0c0808,#0c0808)  635px  0px  / 70px 260px no-repeat,
+      linear-gradient(180deg,#160c0c,#160c0c)  700px  12px / 75px 315px no-repeat;
     background-position-y: bottom;
   }
-  /* neon window dots */
-  #bg-street .bg-fallback::after {
+  #bg-alley .bg-fallback::after {
     content: '';
-    position: absolute; bottom: 100px; left: 0; right: 0; height: 260px;
+    position: absolute; bottom: 60px; left: 0; right: 0; height: 200px;
     background-image:
-      radial-gradient(1.5px 2px at 10px 40px,  rgba(255,45,107,.9) 0%,transparent 100%),
-      radial-gradient(1.5px 2px at 18px 40px,  rgba(255,45,107,.7) 0%,transparent 100%),
-      radial-gradient(1.5px 2px at 10px 52px,  rgba(255,45,107,.5) 0%,transparent 100%),
-      radial-gradient(1.5px 2px at 18px 60px,  rgba(255,45,107,.8) 0%,transparent 100%),
-      radial-gradient(1.5px 2px at 180px 20px, rgba(0,245,255,.9)  0%,transparent 100%),
-      radial-gradient(1.5px 2px at 188px 20px, rgba(0,245,255,.6)  0%,transparent 100%),
-      radial-gradient(1.5px 2px at 196px 20px, rgba(0,245,255,.8)  0%,transparent 100%),
-      radial-gradient(1.5px 2px at 380px 15px, rgba(255,230,0,.8)  0%,transparent 100%),
-      radial-gradient(1.5px 2px at 396px 27px, rgba(255,230,0,.9)  0%,transparent 100%),
-      radial-gradient(2px   2px at 560px 10px, rgba(155,48,255,.9) 0%,transparent 100%),
-      radial-gradient(1.5px 2px at 570px 22px, rgba(155,48,255,.7) 0%,transparent 100%),
-      radial-gradient(1px 1.5px at 680px 25px, rgba(0,245,255,.7)  0%,transparent 100%),
-      radial-gradient(1px 1.5px at 700px 35px, rgba(255,45,107,.6) 0%,transparent 100%),
-      radial-gradient(1px 1.5px at 740px 40px, rgba(255,230,0,.4)  0%,transparent 100%);
+      radial-gradient(1px 1.5px at 20px 60px,  rgba(200,128,58,.7) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 28px 60px,  rgba(200,128,58,.5) 0%,transparent 100%),
+      radial-gradient(1px 2px   at 20px 76px,  rgba(200,128,58,.4) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 160px 30px, rgba(160,144,112,.6) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 170px 30px, rgba(160,144,112,.4) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 350px 20px, rgba(139,58,58,.8)  0%,transparent 100%),
+      radial-gradient(1px 1.5px at 366px 32px, rgba(139,58,58,.6)  0%,transparent 100%),
+      radial-gradient(1.5px 2px at 530px 15px, rgba(200,128,58,.7) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 540px 28px, rgba(160,144,112,.5) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 660px 38px, rgba(200,128,58,.4) 0%,transparent 100%),
+      radial-gradient(1px 1.5px at 700px 42px, rgba(139,58,58,.5)  0%,transparent 100%);
   }
 
-  /* Neon signs overlay (always rendered on top of street bg image too) */
-  .street-signs {
-    position: absolute;
-    bottom: 130px; left: 0; right: 0; height: 80px;
+  /* dim lantern signs for the alley scene */
+  .alley-signs {
+    position: absolute; bottom: 110px; left: 0; right: 0; height: 80px;
     pointer-events: none; z-index: 3;
   }
-  .street-signs .sign {
+  .alley-signs .sign {
     position: absolute;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700; font-size: 13px; letter-spacing: 0.1em;
+    font-family: 'Cinzel', serif;
+    font-weight: 600; font-size: 11px; letter-spacing: 0.12em;
     padding: 3px 8px; border: 1px solid;
   }
-  .sign-1 {
-    bottom: 30px; left: 60px; color: var(--hot);
-    border-color: rgba(255,45,107,.5);
-    box-shadow: 0 0 8px rgba(255,45,107,.4), inset 0 0 8px rgba(255,45,107,.08);
-    text-shadow: 0 0 10px rgba(255,45,107,.8);
-    animation: sign-flicker 3.5s steps(1) infinite;
+  .asign-1 {
+    bottom: 20px; left: 80px; color: var(--accent);
+    border-color: rgba(200,128,58,.4);
+    box-shadow: 0 0 8px rgba(200,128,58,.3), inset 0 0 6px rgba(200,128,58,.06);
+    text-shadow: 0 0 8px rgba(200,128,58,.7);
+    animation: sign-flicker 4s steps(1) infinite;
   }
-  .sign-2 {
-    bottom: 10px; left: 230px; color: var(--cyan); font-size: 11px;
-    border-color: rgba(0,245,255,.4);
-    box-shadow: 0 0 8px rgba(0,245,255,.3), inset 0 0 8px rgba(0,245,255,.06);
-    text-shadow: 0 0 10px rgba(0,245,255,.8);
+  .asign-2 {
+    bottom: 5px; left: 260px; color: var(--accent3); font-size: 10px;
+    border-color: rgba(160,144,112,.35);
+    box-shadow: 0 0 6px rgba(160,144,112,.25);
+    text-shadow: 0 0 8px rgba(160,144,112,.7);
   }
-  .sign-3 {
-    bottom: 20px; right: 140px; color: var(--yellow);
-    border-color: rgba(255,230,0,.4);
-    box-shadow: 0 0 10px rgba(255,230,0,.3);
-    text-shadow: 0 0 8px rgba(255,230,0,.9);
-    animation: sign-flicker 7s steps(1) infinite 2s;
+  .asign-3 {
+    bottom: 14px; right: 120px; color: var(--accent2);
+    border-color: rgba(139,58,58,.4);
+    box-shadow: 0 0 8px rgba(139,58,58,.3);
+    text-shadow: 0 0 7px rgba(139,58,58,.8);
+    animation: sign-flicker 9s steps(1) infinite 3s;
   }
   @keyframes sign-flicker {
-    0%,90%,100%{opacity:1;} 91%{opacity:.1;} 93%{opacity:1;} 96%{opacity:.3;} 98%{opacity:1;}
+    0%,88%,100%{opacity:1;} 89%{opacity:.1;} 91%{opacity:1;} 95%{opacity:.3;} 97%{opacity:1;}
   }
 
-  /* ── BAR fallback ── */
-  #bg-bar .bg-fallback {
-    background: linear-gradient(180deg, #060410 0%, #0c0620 40%, #100820 70%, #0a0518 100%);
+  /* Store background */
+  #bg-store .bg-fallback {
+    background: linear-gradient(180deg, #060405 0%, #0c0809 40%, #100b0a 70%, #080506 100%);
   }
-  #bg-bar .bg-fallback::before {
+  #bg-store .bg-fallback::before {
     content: '';
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 500px 300px at 50% 0%,  rgba(155,48,255,.12) 0%,transparent 60%),
-      radial-gradient(ellipse 200px 400px at 10% 50%, rgba(255,45,107,.07)  0%,transparent 60%),
-      radial-gradient(ellipse 200px 300px at 90% 60%, rgba(0,245,255,.06)   0%,transparent 60%);
+      radial-gradient(ellipse 400px 250px at 50% 10%, rgba(200,128,58,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 150px 300px at 15% 50%, rgba(139,58,58,.05)  0%,transparent 60%),
+      radial-gradient(ellipse 180px 250px at 85% 55%, rgba(160,144,112,.04) 0%,transparent 60%);
   }
-  #bg-bar .bg-fallback::after {
+  #bg-store .bg-fallback::after {
     content: '';
-    position: absolute; bottom: 0; left: 0; right: 0; height: 140px;
-    background: linear-gradient(180deg, #120a22 0%, #0c0618 100%);
-    border-top: 2px solid rgba(155,48,255,.3);
-    box-shadow: 0 -10px 40px rgba(155,48,255,.1);
+    position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+    background: linear-gradient(180deg, #130a0a 0%, #0a0606 100%);
+    border-top: 1px solid rgba(200,128,58,.2);
+    box-shadow: 0 -8px 32px rgba(200,128,58,.06);
   }
 
-  /* ── PORTRAIT LAYER ──
-     Each portrait slot holds one <img>.
-     object-fit: contain keeps the full character visible,
-     anchored to the bottom of the frame.                            */
+  /* ── PORTRAIT CONTAINER ── */
   #portrait-container {
     position: absolute;
-    bottom: 0; right: 40px;
-    width: 260px; height: 400px;
+    bottom: 0; left: 0; right: 0;
+    height: 400px;
     z-index: 6;
     pointer-events: none;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 0 40px;
   }
 
   .portrait {
     display: none;
-    position: absolute; inset: 0;
+    position: absolute;
+    bottom: 0;
+    width: 200px; height: 380px;
+    transition: opacity 0.3s;
   }
   .portrait.active { display: block; }
 
-  /* The actual sprite image */
-  .portrait .sprite-img {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    width: 100%; height: 100%;
-    object-fit: contain;
-    object-position: bottom center;
-    display: block;
-  }
+  /* Positioning slots */
+  .portrait.slot-left  { left: 30px; }
+  .portrait.slot-center { left: 50%; transform: translateX(-50%); }
+  .portrait.slot-right { right: 30px; }
 
-  /* CSS fallback sprite shown when no image URL is supplied */
-  .sprite-fallback {
+  /* Placeholder silhouette */
+  .sprite-placeholder {
     position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    padding-bottom: 0;
   }
 
-  /* ── Kira fallback ── */
-  .char-kira .sprite-fallback .hair-side {
-    position:absolute; bottom:280px; left:calc(50% - 42px);
-    width:18px; height:50px;
-    background:linear-gradient(180deg,#1a0818,#2a0a20); border-radius:0 0 8px 8px;
+  /* Generic PM-style silhouette: head + coat shape */
+  .sil-body {
+    width: 100px; height: 280px; position: relative;
+    display: flex; flex-direction: column; align-items: center;
   }
-  .char-kira .sprite-fallback .hair {
-    position:absolute; bottom:310px; left:50%; transform:translateX(-50%);
-    width:66px; height:40px;
-    background:linear-gradient(160deg,#1a0818,#2a0a20); border-radius:50% 50% 20% 20%;
+  .sil-head {
+    width: 52px; height: 60px;
+    border-radius: 46% 46% 40% 40%;
+    position: relative; flex-shrink: 0;
+    border: 1px solid;
   }
-  .char-kira .sprite-fallback .head {
-    position:absolute; bottom:252px; left:50%; transform:translateX(-50%);
-    width:58px; height:66px;
-    background:linear-gradient(160deg,#c8a07a,#b08860); border-radius:48% 48% 42% 42%;
+  .sil-neck {
+    width: 18px; height: 14px;
+    flex-shrink: 0;
   }
-  .char-kira .sprite-fallback .augment {
-    position:absolute; bottom:281px; left:calc(50% + 6px);
-    width:28px; height:4px;
-    background:rgba(0,245,255,.7); box-shadow:0 0 8px rgba(0,245,255,.8);
+  .sil-coat {
+    flex: 1; width: 96px;
+    clip-path: polygon(8% 0%,92% 0%,100% 100%,0% 100%);
+    border-top: 1px solid; position: relative;
   }
-  .char-kira .sprite-fallback .eyes {
-    position:absolute; bottom:278px; left:50%; transform:translateX(-50%);
-    width:38px; display:flex; justify-content:space-between;
-  }
-  .char-kira .sprite-fallback .eye {
-    width:8px; height:7px; background:#d04080; border-radius:50%;
-    box-shadow:0 0 8px rgba(255,45,107,.9);
-  }
-  .char-kira .sprite-fallback .neck {
-    position:absolute; bottom:237px; left:50%; transform:translateX(-50%);
-    width:20px; height:20px; background:#c09878;
-  }
-  .char-kira .sprite-fallback .coat {
-    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    width:100px; height:240px;
-    background:linear-gradient(160deg,#1a0e28,#100818,#0e0614);
-    border:1px solid rgba(155,48,255,.25);
-    clip-path:polygon(12% 0%,88% 0%,100% 100%,0% 100%);
-  }
-  .char-kira .sprite-fallback .coat::before {
-    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:2px; height:100%;
-    background:linear-gradient(180deg,rgba(155,48,255,.6),transparent);
-  }
-  .char-kira .sprite-fallback .coat-stripe {
-    position:absolute; bottom:60px; left:50%; transform:translateX(-50%);
-    width:80px; height:2px;
-    background:linear-gradient(90deg,transparent,rgba(255,45,107,.7),transparent);
-  }
-  .char-kira .sprite-fallback .cyber-arm {
-    position:absolute; bottom:80px; left:calc(50% - 60px);
-    width:22px; height:120px;
-    background:linear-gradient(180deg,#1a1a2e,#0e0e20);
-    border:1px solid rgba(0,245,255,.3); box-shadow:0 0 6px rgba(0,245,255,.15);
-  }
-  .char-kira .sprite-fallback .cyber-arm::before {
-    content:''; position:absolute; top:20px; left:50%; transform:translateX(-50%);
-    width:10px; height:2px; background:rgba(0,245,255,.8);
-    box-shadow:0 8px 0 rgba(0,245,255,.6),0 16px 0 rgba(0,245,255,.4),0 24px 0 rgba(0,245,255,.7);
+  .sil-coat::before {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 1px; height: 100%;
   }
 
-  /* ── Ryker fallback ── */
-  .char-ryker .sprite-fallback .hair {
-    position:absolute; bottom:272px; left:50%; transform:translateX(-50%);
-    width:58px; height:18px; background:#1a1010; border-radius:50% 50% 10% 10%;
+  /* Kazki — amber tones */
+  .sil-kazki .sil-head {
+    background: rgba(200,128,58,.12);
+    border-color: rgba(200,128,58,.4);
+    box-shadow: 0 0 12px rgba(200,128,58,.15), inset 0 0 8px rgba(200,128,58,.05);
   }
-  .char-ryker .sprite-fallback .head {
-    position:absolute; bottom:218px; left:50%; transform:translateX(-50%);
-    width:54px; height:62px;
-    background:linear-gradient(160deg,#a07858,#8a6040); border-radius:46% 46% 40% 40%;
+  .sil-kazki .sil-neck { background: rgba(200,128,58,.15); }
+  .sil-kazki .sil-coat {
+    background: linear-gradient(160deg, rgba(30,18,8,.9), rgba(16,10,4,.95));
+    border-color: rgba(200,128,58,.3);
   }
-  .char-ryker .sprite-fallback .data-visor {
-    position:absolute; bottom:250px; left:calc(50% - 28px);
-    width:56px; height:10px;
-    background:rgba(255,107,26,.15); border:1px solid rgba(255,107,26,.4);
-    box-shadow:0 0 8px rgba(255,107,26,.3);
-  }
-  .char-ryker .sprite-fallback .eyes {
-    position:absolute; bottom:244px; left:50%; transform:translateX(-50%);
-    width:34px; display:flex; justify-content:space-between;
-  }
-  .char-ryker .sprite-fallback .eye {
-    width:7px; height:7px; background:#e06020; border-radius:50%;
-    box-shadow:0 0 5px rgba(255,107,26,.8);
-  }
-  .char-ryker .sprite-fallback .scar {
-    position:absolute; bottom:240px; left:calc(50% - 12px);
-    width:2px; height:20px; background:rgba(255,107,26,.5); transform:rotate(-5deg);
-  }
-  .char-ryker .sprite-fallback .jacket {
-    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
-    width:96px; height:220px;
-    background:linear-gradient(160deg,#180a08,#0e0604);
-    border:1px solid rgba(255,107,26,.2);
-    clip-path:polygon(10% 0%,90% 0%,100% 100%,0% 100%);
-  }
-  .char-ryker .sprite-fallback .jacket::before {
-    content:''; position:absolute; inset:0;
-    background:repeating-linear-gradient(180deg,transparent 0px,transparent 18px,rgba(255,107,26,.04) 18px,rgba(255,107,26,.04) 19px);
-  }
-  .char-ryker .sprite-fallback .badge {
-    position:absolute; bottom:150px; left:calc(50% + 5px);
-    width:18px; height:20px;
-    background:rgba(255,107,26,.2); border:1px solid rgba(255,107,26,.6);
-    box-shadow:0 0 6px rgba(255,107,26,.4);
+  .sil-kazki .sil-coat::before {
+    background: linear-gradient(180deg, rgba(200,128,58,.5), transparent);
   }
 
-  /* ── ATMOSPHERIC OVERLAYS (always on top of everything) ── */
-
-  /* Animated rain */
-  #rain-canvas {
-    position: absolute; inset: 0;
-    pointer-events: none; z-index: 7; opacity: 0.55;
+  /* Akizet — pale silver tones */
+  .sil-aki .sil-head {
+    background: rgba(180,170,158,.1);
+    border-color: rgba(180,170,158,.35);
+    box-shadow: 0 0 10px rgba(180,170,158,.12), inset 0 0 6px rgba(180,170,158,.04);
+  }
+  .sil-aki .sil-neck { background: rgba(180,170,158,.14); }
+  .sil-aki .sil-coat {
+    background: linear-gradient(160deg, rgba(20,18,16,.9), rgba(12,10,8,.95));
+    border-color: rgba(160,152,140,.25);
+  }
+  .sil-aki .sil-coat::before {
+    background: linear-gradient(180deg, rgba(180,170,158,.4), transparent);
   }
 
-  /* Scanlines */
+  /* ??? — blood red, ominous */
+  .sil-unk .sil-head {
+    background: rgba(139,58,58,.1);
+    border-color: rgba(139,58,58,.5);
+    box-shadow: 0 0 14px rgba(139,58,58,.2), inset 0 0 10px rgba(139,58,58,.06);
+  }
+  .sil-unk .sil-neck { background: rgba(139,58,58,.18); }
+  .sil-unk .sil-coat {
+    background: linear-gradient(160deg, rgba(28,10,10,.92), rgba(16,4,4,.97));
+    border-color: rgba(200,48,48,.3);
+    box-shadow: 0 0 10px rgba(139,58,58,.1);
+  }
+  .sil-unk .sil-coat::before {
+    background: linear-gradient(180deg, rgba(200,48,48,.6), transparent);
+  }
+
+  /* slight label under each silhouette */
+  .sil-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: .25em; text-transform: uppercase;
+    margin-top: 8px; opacity: .35; color: var(--accent3);
+  }
+
+  /* ── ATMOSPHERIC OVERLAYS ── */
   #scene-visual::after {
     content: '';
     position: absolute; inset: 0;
-    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 3px);
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.1) 2px,rgba(0,0,0,.1) 3px);
     pointer-events: none; z-index: 15;
   }
-
-  /* Vignette */
   #scene-visual::before {
     content: '';
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse 100% 100% at 50% 50%,transparent 50%,rgba(4,2,10,.6) 100%);
+    background: radial-gradient(ellipse 100% 100% at 50% 50%,transparent 40%,rgba(6,2,2,.75) 100%);
     pointer-events: none; z-index: 14;
   }
 
-  /* Flash */
   #flash {
     position: absolute; inset: 0;
-    background: var(--hot); opacity: 0;
+    background: var(--danger); opacity: 0;
     pointer-events: none; z-index: 20;
-    transition: opacity 0.08s;
+    transition: opacity 0.07s;
   }
 
   /* ── HUD ── */
   #hud {
     display: flex; justify-content: space-between; align-items: center;
     padding: 7px 16px;
-    background: rgba(8,6,14,.97);
+    background: rgba(10,8,8,.97);
     border: 1px solid var(--border); border-bottom: none;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
     color: var(--muted); position: relative;
   }
   #hud::after {
     content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg,transparent,rgba(255,45,107,.3),rgba(0,245,255,.3),transparent);
+    background: linear-gradient(90deg,transparent,rgba(200,128,58,.35),rgba(139,58,58,.3),transparent);
   }
-  #hud-chapter { color: var(--hot); text-shadow: 0 0 10px rgba(255,45,107,.5); }
+  #hud-chapter { color: var(--accent); text-shadow: 0 0 10px rgba(200,128,58,.4); }
   .hbar-wrap { display:flex; align-items:center; gap:8px; }
-  .hbar { width:84px; height:3px; background:rgba(255,255,255,.06); }
+  .hbar { width:84px; height:3px; background:rgba(255,255,255,.05); }
   .hbar-fill { height:100%; width:100%; transition:width .5s,background .5s; }
 
   /* ── DIALOGUE PANEL ── */
@@ -404,171 +324,153 @@
   }
   #dialogue-panel::before {
     content: ''; position: absolute; top:0; left:0; right:0; height:1px;
-    background: linear-gradient(90deg,transparent,rgba(255,45,107,.5),rgba(0,245,255,.4),transparent);
+    background: linear-gradient(90deg,transparent,rgba(200,128,58,.45),rgba(139,58,58,.4),transparent);
   }
   #dialogue-inner { padding: 18px 26px 16px; }
 
   #speaker-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--hot); margin-bottom: 8px; min-height: 18px;
-    text-shadow: 0 0 12px rgba(255,45,107,.6); position: relative;
+    font-family: 'Cinzel', serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px; min-height: 18px;
+    text-shadow: 0 0 10px rgba(200,128,58,.5); position: relative;
   }
   #speaker-name::after {
     content: ''; position:absolute; left:0; bottom:-3px; width:100%; height:1px;
-    background: linear-gradient(90deg,rgba(255,45,107,.5),transparent);
+    background: linear-gradient(90deg,rgba(200,128,58,.5),transparent);
   }
 
   #dialogue-text {
-    font-size: 18px; font-weight: 400; line-height: 1.6;
-    color: var(--text); min-height: 58px; white-space: pre-wrap; margin-top: 6px;
+    font-size: 18px; font-weight: 400; line-height: 1.7;
+    color: var(--pale); min-height: 58px; white-space: pre-wrap; margin-top: 6px;
+    font-family: 'IM Fell English', serif;
   }
 
   #continue-hint {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
     color: var(--muted); text-align: right; margin-top: 10px;
-    visibility: hidden; animation: blink 1.2s ease-in-out infinite;
+    visibility: hidden; animation: blink 1.3s ease-in-out infinite;
   }
   #continue-hint.visible { visibility: visible; }
-  @keyframes blink { 0%,100%{opacity:.8;} 50%{opacity:.2;} }
+  @keyframes blink { 0%,100%{opacity:.7;} 50%{opacity:.15;} }
 
   /* ── CHOICES ── */
   #choice-panel {
     display: none; padding: 10px 16px 14px;
     background: var(--panel2); border: 1px solid var(--border);
-    border-top: 1px solid rgba(255,45,107,.15);
+    border-top: 1px solid rgba(200,128,58,.12);
     gap: 7px; flex-direction: column;
   }
   #choice-panel.active { display: flex; }
   .choice-btn {
-    background: rgba(255,45,107,.04); border: 1px solid rgba(255,45,107,.2);
-    color: var(--text); font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px; font-weight: 500; letter-spacing: 0.05em;
-    padding: 9px 16px; cursor: pointer; text-align: left; transition: all .15s;
+    background: rgba(200,128,58,.04); border: 1px solid rgba(200,128,58,.2);
+    color: var(--pale); font-family: 'Cinzel', serif;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    padding: 10px 16px; cursor: pointer; text-align: left; transition: all .15s;
     position: relative; overflow: hidden;
   }
   .choice-btn::before {
     content: ''; position:absolute; left:0; top:0; bottom:0; width:2px;
-    background: var(--hot); transform: scaleY(0); transition: transform .15s;
+    background: var(--accent); transform: scaleY(0); transition: transform .15s;
   }
   .choice-btn:hover {
-    background: rgba(255,45,107,.09); border-color: rgba(255,45,107,.5);
-    color: #fff; padding-left: 24px; box-shadow: inset 0 0 20px rgba(255,45,107,.05);
+    background: rgba(200,128,58,.09); border-color: rgba(200,128,58,.5);
+    color: var(--white); padding-left: 24px;
+    box-shadow: inset 0 0 20px rgba(200,128,58,.04);
   }
   .choice-btn:hover::before { transform: scaleY(1); }
 
-  /* ── QTE OVERLAY ── */
-  #qte-overlay {
-    display: none; position: absolute; inset: 0;
-    background: rgba(4,2,12,.92); z-index: 30;
-    flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  /* Shake — used by battle system and damage events */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-9px); } 40% { transform: translateX(9px); }
+    60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
   }
-  #qte-overlay.active { display: flex; }
-  #qte-overlay::before {
-    content: ''; position:absolute; inset:0;
-    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,45,107,.02) 2px,rgba(255,45,107,.02) 3px);
-    pointer-events: none;
+  .shaking { animation: shake .3s ease; }
+
+  /* ── TREMBLE — per-character tremor for emotionally charged scenes ── */
+  @keyframes char-tremble {
+    0%   { transform: translate(0px,     0px)    rotate(0deg);    }
+    11%  { transform: translate(-1.1px,  0.5px)  rotate(-0.35deg); }
+    22%  { transform: translate(0.9px,  -0.7px)  rotate(0.28deg);  }
+    33%  { transform: translate(-0.5px,  1.1px)  rotate(0.45deg);  }
+    44%  { transform: translate(1.2px,   0.2px)  rotate(-0.22deg); }
+    55%  { transform: translate(-0.8px, -0.6px)  rotate(0.31deg);  }
+    66%  { transform: translate(0.4px,   0.9px)  rotate(-0.38deg); }
+    77%  { transform: translate(-1px,    0.3px)  rotate(0.18deg);  }
+    88%  { transform: translate(0.6px,  -0.9px)  rotate(-0.27deg); }
+    100% { transform: translate(0px,     0px)    rotate(0deg);    }
   }
-  #qte-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.4em; color: var(--muted); text-transform: uppercase;
+  .tremble-char {
+    display: inline-block;
+    vertical-align: baseline;
   }
-  #qte-prompt {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 30px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
-    color: #fff; text-align: center; text-shadow: 0 0 20px rgba(255,45,107,.7);
+  .tremble-char.appeared {
+    animation: char-tremble 0.32s ease-in-out infinite;
   }
-  #qte-key {
-    width:78px; height:78px; border:2px solid var(--cyan);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Barlow Condensed',sans-serif; font-size:34px; font-weight:700;
-    color:var(--cyan);
-    box-shadow:0 0 24px rgba(0,245,255,.5),inset 0 0 16px rgba(0,245,255,.08);
-    animation:qte-pulse .65s ease-in-out infinite;
-    text-shadow:0 0 12px var(--cyan);
-  }
-  @keyframes qte-pulse {
-    0%,100%{box-shadow:0 0 20px rgba(0,245,255,.4),inset 0 0 12px rgba(0,245,255,.06);}
-    50%{box-shadow:0 0 44px rgba(0,245,255,.85),inset 0 0 24px rgba(0,245,255,.15);}
-  }
-  #qte-bar-wrap { width:360px; height:6px; background:rgba(255,255,255,.06); }
-  #qte-bar { height:100%; width:100%; background:linear-gradient(90deg,var(--cyan),var(--hot)); }
-  #qte-mash-section { display:none; flex-direction:column; align-items:center; gap:10px; }
-  #qte-mash-section.active { display:flex; }
-  #qte-mash-hint {
-    font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600;
-    letter-spacing:.15em; color:var(--muted); text-transform:uppercase;
-  }
-  #qte-mash-bar-wrap {
-    width:360px; height:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,45,107,.2);
-  }
-  #qte-mash-bar {
-    height:100%; width:0%;
-    background:linear-gradient(90deg,var(--hot),var(--yellow));
-    transition:width .05s; box-shadow:0 0 10px rgba(255,45,107,.4);
-  }
-  #qte-result {
-    font-family:'Barlow Condensed',sans-serif;
-    font-size:28px; font-weight:700; letter-spacing:.25em; text-transform:uppercase;
-    opacity:0; transition:opacity .25s;
-  }
-  #qte-result.success { color:var(--cyan); text-shadow:0 0 20px rgba(0,245,255,.8); }
-  #qte-result.fail    { color:var(--hot);  text-shadow:0 0 20px rgba(255,45,107,.8); }
+
+@keyframes char-wave {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  25%  { transform: translateY(-6px) rotate(2deg); }
+  75%  { transform: translateY(3px) rotate(-1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.wave-char {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.wave-char.appeared {
+  animation: char-wave 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+}
 
   /* ── TITLE SCREEN ── */
   #title-screen {
     position:absolute; inset:0; background:var(--bg); z-index:50;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:12px; padding:40px; overflow:hidden;
+    gap:10px; padding:40px; overflow:hidden;
   }
   #title-screen::before {
     content:''; position:absolute; inset:0;
     background:
-      radial-gradient(ellipse 600px 400px at 50% 40%,rgba(155,48,255,.08) 0%,transparent 60%),
-      radial-gradient(ellipse 300px 200px at 20% 80%,rgba(255,45,107,.06) 0%,transparent 60%),
-      radial-gradient(ellipse 200px 300px at 80% 20%,rgba(0,245,255,.04)  0%,transparent 60%);
+      radial-gradient(ellipse 600px 350px at 50% 40%,rgba(139,58,58,.07) 0%,transparent 60%),
+      radial-gradient(ellipse 300px 200px at 20% 80%,rgba(200,128,58,.05) 0%,transparent 60%),
+      radial-gradient(ellipse 200px 300px at 80% 20%,rgba(160,144,112,.03) 0%,transparent 60%);
     pointer-events:none;
   }
   #title-screen .title-tag {
-    font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:600;
-    letter-spacing:.45em; color:var(--muted); text-transform:uppercase; position:relative; z-index:1;
+    font-family:'Cinzel',serif; font-size:9px; font-weight:600;
+    letter-spacing:.55em; color:var(--muted); text-transform:uppercase; position:relative; z-index:1;
   }
   #title-screen h1 {
-    font-family:'Barlow Condensed',sans-serif;
-    font-size:52px; font-weight:700; letter-spacing:.1em; text-align:center; line-height:1.1;
-    color:#fff; text-shadow:0 0 40px rgba(255,45,107,.5),0 0 80px rgba(255,45,107,.2);
-    position:relative; z-index:1; animation:title-glitch 6s steps(1) infinite;
-  }
-  @keyframes title-glitch {
-    0%,88%,100%{text-shadow:0 0 40px rgba(255,45,107,.5),0 0 80px rgba(255,45,107,.2);}
-    89%{text-shadow:4px 0 0 rgba(0,245,255,1),-4px 0 0 rgba(255,45,107,1);transform:skewX(8deg);}
-    90%{text-shadow:-3px 0 0 rgba(0,245,255,.8);transform:skewX(-4deg);}
-    91%{text-shadow:0 0 40px rgba(255,45,107,.5);transform:none;}
-    95%{text-shadow:2px 0 0 rgba(155,48,255,.9),-2px 0 0 rgba(255,45,107,.9);}
-    96%{text-shadow:0 0 40px rgba(255,45,107,.5);}
+    font-family:'Cinzel',serif;
+    font-size:52px; font-weight:700; letter-spacing:.12em; text-align:center; line-height:1.1;
+    color:var(--white); text-shadow:0 0 40px rgba(200,128,58,.4),0 0 80px rgba(200,128,58,.15);
+    position:relative; z-index:1;
   }
   #title-screen .subtitle {
-    font-size:16px; font-weight:400; color:var(--muted); font-style:italic;
-    text-align:center; max-width:420px; line-height:1.65; position:relative; z-index:1;
+    font-family:'IM Fell English',serif; font-style:italic;
+    font-size:15px; font-weight:400; color:var(--muted);
+    text-align:center; max-width:400px; line-height:1.75; position:relative; z-index:1;
   }
   #title-screen .title-divider {
     width:200px; height:1px;
-    background:linear-gradient(90deg,transparent,rgba(255,45,107,.6),rgba(0,245,255,.5),transparent);
-    margin:4px 0;
+    background:linear-gradient(90deg,transparent,rgba(200,128,58,.55),rgba(139,58,58,.45),transparent);
+    margin:6px 0;
   }
   #start-btn {
     margin-top:16px; background:transparent;
-    border:1px solid rgba(255,45,107,.6); color:var(--hot);
-    font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700;
-    letter-spacing:.28em; text-transform:uppercase; padding:12px 44px;
+    border:1px solid rgba(200,128,58,.55); color:var(--accent);
+    font-family:'Cinzel',serif; font-size:11px; font-weight:700;
+    letter-spacing:.3em; text-transform:uppercase; padding:12px 44px;
     cursor:pointer; transition:all .2s; position:relative; z-index:1;
-    text-shadow:0 0 8px rgba(255,45,107,.5);
+    text-shadow:0 0 8px rgba(200,128,58,.4);
   }
   #start-btn:hover {
-    background:rgba(255,45,107,.1);
-    box-shadow:0 0 24px rgba(255,45,107,.3),inset 0 0 12px rgba(255,45,107,.06);
-    letter-spacing:.32em;
+    background:rgba(200,128,58,.08);
+    box-shadow:0 0 20px rgba(200,128,58,.25),inset 0 0 12px rgba(200,128,58,.05);
+    letter-spacing:.36em;
   }
 
   /* ── END SCREEN ── */
@@ -578,25 +480,786 @@
     gap:12px; text-align:center; padding:50px;
   }
   #end-screen.active { display:flex; }
-  #end-tag  { font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:.4em; color:var(--muted); text-transform:uppercase; }
-  #end-title { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:700; letter-spacing:.12em; }
-  #end-summary { font-size:17px; color:var(--muted); font-style:italic; max-width:480px; line-height:1.75; }
+  #end-tag  { font-family:'Cinzel',serif; font-size:9px; font-weight:700; letter-spacing:.45em; color:var(--muted); text-transform:uppercase; }
+  #end-title { font-family:'Cinzel',serif; font-size:22px; font-weight:700; letter-spacing:.15em; }
+  #end-summary { font-family:'IM Fell English',serif; font-size:16px; font-style:italic; color:var(--muted); max-width:480px; line-height:1.8; }
   #replay-btn {
-    margin-top:22px; background:transparent; border:1px solid var(--border); color:var(--text);
-    font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:600;
-    letter-spacing:.2em; text-transform:uppercase; padding:10px 28px;
+    margin-top:22px; background:transparent; border:1px solid var(--border); color:var(--pale);
+    font-family:'Cinzel',serif; font-size:11px; font-weight:600;
+    letter-spacing:.22em; text-transform:uppercase; padding:10px 28px;
     cursor:pointer; transition:all .2s;
   }
-  #replay-btn:hover { border-color:var(--hot); color:var(--hot); }
+  #replay-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── STALK MINIGAME OVERLAY ── */
+  #stalk-overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(2,1,1,.88); z-index: 30;
+    flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  }
+  #stalk-overlay.active { display: flex; }
+  #stalk-overlay::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(200,128,58,.008) 2px,rgba(200,128,58,.008) 3px);
+    pointer-events: none;
+  }
+
+  #stalk-target-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px; letter-spacing: .55em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  #stalk-flavor {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 15px; color: var(--muted);
+    text-align: center; max-width: 560px; line-height: 1.65;
+    text-shadow: none; min-height: 1.4em;
+  }
+
+  /* The "window" — shows a moving grunt silhouette and a click zone */
+  #stalk-arena {
+    width: 560px; height: 110px;
+    position: relative;
+    border: 1px solid rgba(200,128,58,.15);
+    background: rgba(6,4,4,.6);
+    overflow: hidden;
+  }
+  #stalk-arena::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 30%, rgba(4,2,2,.8) 100%);
+    pointer-events: none; z-index: 2;
+  }
+
+  /* Grunt silhouette */
+  #stalk-grunt {
+    position: absolute; bottom: 0;
+    width: 80px; height: 110px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    transition: left 0.05s linear;
+    z-index: 3;
+  }
+  .grunt-fig {
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .grunt-head {
+    width: 36px; height: 40px; border-radius: 45% 45% 38% 38%;
+    background: rgba(139,58,58,.18); border: 1px solid rgba(139,58,58,.45);
+    box-shadow: 0 0 10px rgba(139,58,58,.2);
+  }
+  .grunt-neck { width: 12px; height: 10px; background: rgba(139,58,58,.2); }
+  .grunt-body {
+    width: 60px; height: 60px;
+    background: linear-gradient(160deg,rgba(26,8,8,.9),rgba(14,4,4,.95));
+    border: 1px solid rgba(139,58,58,.3);
+    clip-path: polygon(12% 0%,88% 0%,100% 100%,0% 100%);
+  }
+
+  /* ── GRUNT WALK ANIMATION — 4 SEPARATE FRAMES PER GRUNT ──────
+   *
+   *  Each grunt has 4 individual transparent PNG frames (32×32px each).
+   *  The animation swaps between them using background-image in steps.
+   *
+   *  FRAME SIZE: 32×32 px transparent PNG.
+   *  The sprite is displayed at 32×32 inside the 40×90 grunt container,
+   *  anchored to the bottom so feet sit on the arena floor.
+   *
+   *  TO SET YOUR FRAMES:
+   *    Find GRUNT_SPRITES in the <script> section and fill in the
+   *    f1/f2/f3/f4 paths for each grunt. Leave all four as '' to
+   *    keep the CSS silhouette placeholder showing instead.
+   *
+   *  TO ADJUST WALK SPEED:
+   *    Change the fps value per grunt in GRUNT_SPRITES.
+   *    fps: 6  =  normal patrol pace  (recommended starting point)
+   *    fps: 4  =  slow lumber
+   *    fps: 10 =  quick nervous shuffle
+   *
+   *  The animation uses steps(4) for hard pixel-art snapping between
+   *  frames. Remove steps(4) for smooth interpolation (usually wrong
+   *  for pixel art but your call).
+   * ────────────────────────────────────────────────────────────── */
+
+  /* The grunt container — sized to fill the arena height */
+  #stalk-grunt {
+    position: absolute; bottom: 0;
+    width: 80px; height: 110px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    transition: left 0.05s linear;
+    transform-origin: center bottom;
+    z-index: 3;
+  }
+
+  /* Sprite element — fills the full 80×110 container.
+   * Your 32×32 source PNGs are upscaled to fit via background-size.
+   * image-rendering: pixelated keeps the pixel art crisp at any scale.
+   * If you'd rather preserve the square aspect ratio and letterbox,
+   * change background-size to 'contain'. */
+  #stalk-grunt-sprite {
+    display: none;                   /* shown by JS when frames are set     */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;                     /* matches grunt container width        */
+    height: 110px;                   /* matches grunt container height       */
+    image-rendering: pixelated;      /* keeps pixel art crisp at upscale     */
+    background-repeat: no-repeat;
+    background-size: 80px 110px;     /* stretch to fill — swap for 'contain' to preserve aspect ratio */
+    background-position: bottom center;
+  }
+
+  /* ── Per-grunt walk keyframes ──
+   *  Each grunt gets its own @keyframes block so they can have
+   *  completely different art. JS picks the right one at runtime.
+   *  Replace the placeholder filenames with your actual PNG paths. */
+
+  /* GRUNT 1 — distracted, slow patrol */
+  @keyframes grunt1-walk {
+    0%   { background-image: url('grunt1_f1.png'); }
+    25%  { background-image: url('grunt1_f2.png'); }
+    50%  { background-image: url('grunt1_f3.png'); }
+    75%  { background-image: url('grunt1_f4.png'); }
+  }
+
+  /* GRUNT 2 — bigger, bored, lumbering */
+  @keyframes grunt2-walk {
+    0%   { background-image: url('grunt2_f1.png'); }
+    25%  { background-image: url('grunt2_f2.png'); }
+    50%  { background-image: url('grunt2_f3.png'); }
+    75%  { background-image: url('grunt2_f4.png'); }
+  }
+
+  /* GRUNT 3 — nervous, quicker steps */
+  @keyframes grunt3-walk {
+    0%   { background-image: url('grunt3_f1.png'); }
+    25%  { background-image: url('grunt3_f2.png'); }
+    50%  { background-image: url('grunt3_f3.png'); }
+    75%  { background-image: url('grunt3_f4.png'); }
+  }
+
+  /* Alert indicator — shown when grunt is in the "looking" state */
+  #stalk-alert {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--danger); text-shadow: 0 0 8px rgba(200,48,48,.9);
+    opacity: 0; transition: opacity .18s;
+    z-index: 5; white-space: nowrap;
+  }
+  #stalk-alert.visible { opacity: 1; }
+
+  /* Strike zone indicator */
+  #stalk-zone {
+    position: absolute; bottom: 0;
+    width: 70px; height: 110px;
+    border: 1px solid rgba(200,128,58,.22);
+    background: rgba(200,128,58,.04);
+    box-shadow: inset 0 0 12px rgba(200,128,58,.04);
+    z-index: 1; pointer-events: none;
+    transition: left .6s ease;
+  }
+  #stalk-zone::after {
+    content: 'STRIKE ZONE';
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    font-family: 'Cinzel', serif; font-size: 7px; letter-spacing: .25em;
+    color: rgba(200,128,58,.3); white-space: nowrap;
+  }
+
+  /* Big click button */
+  #stalk-btn {
+    background: transparent; border: 1px solid rgba(200,128,58,.35);
+    color: var(--accent); font-family: 'Cinzel', serif;
+    font-size: 11px; font-weight: 700; letter-spacing: .35em; text-transform: uppercase;
+    padding: 10px 38px; cursor: pointer; transition: all .15s;
+    text-shadow: 0 0 8px rgba(200,128,58,.4);
+    position: relative;
+  }
+  #stalk-btn:hover {
+    background: rgba(200,128,58,.07); border-color: rgba(200,128,58,.7);
+    box-shadow: 0 0 16px rgba(200,128,58,.2);
+  }
+  #stalk-btn:disabled {
+    opacity: .3; cursor: default; pointer-events: none;
+  }
+
+  /* Result flash */
+  #stalk-result {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 16px; color: var(--accent3);
+    min-height: 1.4em; text-align: center;
+    text-shadow: 0 0 10px rgba(160,144,112,.5);
+    opacity: 0; transition: opacity .3s;
+  }
+  #stalk-result.visible { opacity: 1; }
+  #stalk-result.fail { color: var(--danger); text-shadow: 0 0 10px rgba(200,48,48,.7); }
+
+  /* Stealth bar */
+  #stalk-bar-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 5px; width: 260px;
+  }
+  #stalk-bar-label {
+    font-family: 'Cinzel', serif; font-size: 8.5px; letter-spacing: .45em;
+    text-transform: uppercase; color: rgba(200,128,58,.5);
+  }
+  #stalk-bar-track {
+    width: 100%; height: 4px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(200,128,58,.2);
+  }
+  #stalk-bar-fill {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    box-shadow: 0 0 5px rgba(200,128,58,.4);
+    transition: width .25s ease, background .3s;
+  }
+
+  /* Stalk flash */
+  #stalk-flash {
+    position: absolute; inset: 0; z-index: 32;
+    opacity: 0; pointer-events: none; transition: opacity .06s;
+  }
+
+  /* ── MEMORY MINIGAME OVERLAY ── */
+  #memory-overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(4,2,2,.93); z-index: 30;
+    flex-direction: column; align-items: center; justify-content: center; gap: 0px;
+  }
+  #memory-overlay.active { display: flex; }
+  #memory-overlay::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(200,128,58,.008) 3px,rgba(200,128,58,.008) 4px);
+    pointer-events: none;
+  }
+
+  #mem-title {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: .55em; text-transform: uppercase;
+    color: rgba(160,144,112,.35); margin-bottom: 14px; position: relative; z-index:1;
+  }
+  #mem-subtitle {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 13px; color: rgba(90,74,64,.8); letter-spacing: .04em;
+    margin-bottom: 26px; text-align: center; max-width: 500px; position: relative; z-index:1;
+    line-height: 1.7;
+  }
+  #mem-breath-ring {
+    width: 80px; height: 80px; border-radius: 50%;
+    border: 1px solid rgba(200,128,58,.15);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    box-shadow: 0 0 30px rgba(200,128,58,.04), inset 0 0 20px rgba(200,128,58,.02);
+    pointer-events: none; z-index: 0;
+    animation: mem-pulse 4s ease-in-out infinite;
+  }
+  @keyframes mem-pulse {
+    0%,100% { transform: translate(-50%,-50%) scale(1); opacity: .4; }
+    50% { transform: translate(-50%,-50%) scale(1.3); opacity: .12; }
+  }
+
+  #mem-thought-field {
+    position: relative; width: 700px; max-width: 95vw; height: 200px;
+    z-index: 1; margin-bottom: 18px;
+  }
+
+  .mem-thought {
+    position: absolute;
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 14px; line-height: 1.5; letter-spacing: .02em;
+    color: var(--pale);
+    background: rgba(16,10,10,.7);
+    border: 1px solid rgba(200,128,58,.18);
+    padding: 9px 14px;
+    cursor: pointer;
+    max-width: 220px;
+    transition: border-color .18s, background .18s, opacity .5s ease, transform .5s ease, filter .5s ease;
+    box-shadow: 0 0 14px rgba(0,0,0,.6);
+    user-select: none;
+  }
+  .mem-thought::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--accent2); transform: scaleY(0); transition: transform .18s;
+  }
+  .mem-thought:hover {
+    border-color: rgba(200,128,58,.5);
+    background: rgba(28,14,14,.85);
+  }
+  .mem-thought:hover::before { transform: scaleY(1); }
+  .mem-thought.suppressed {
+    opacity: 0;
+    transform: scale(.6) translateY(-14px);
+    filter: blur(1.5px);
+    pointer-events: none;
+  }
+  .mem-thought.category-grief  { border-left-color: rgba(139,58,58,.6); }
+  .mem-thought.category-rage   { border-left-color: rgba(200,48,48,.6); }
+  .mem-thought.category-tender { border-left-color: rgba(160,144,112,.55); }
+  .mem-thought.category-cold   { border-left-color: rgba(80,100,130,.5); }
+
+  #mem-instruction {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: .42em; color: rgba(90,74,64,.6);
+    text-transform: uppercase; text-align: center; margin-bottom: 10px;
+    position: relative; z-index:1;
+  }
+
+  #mem-gauge-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    position: relative; z-index:1; margin-bottom: 8px;
+  }
+  #mem-gauge-label {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .38em;
+    text-transform: uppercase; color: rgba(160,144,112,.3);
+  }
+  #mem-gauge-track {
+    width: 220px; height: 3px;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(200,128,58,.15);
+  }
+  #mem-gauge-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, rgba(80,50,30,.8), rgba(160,144,112,.6));
+    transition: width .45s ease;
+  }
+
+  #mem-echo {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 13px; color: rgba(90,74,64,.5);
+    text-align: center; min-height: 20px;
+    transition: opacity .4s ease; opacity: 0;
+    position: relative; z-index:1;
+    max-width: 500px; letter-spacing: .025em;
+  }
+  #mem-echo.visible { opacity: 1; }
+
+  #mem-final-thought {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 16px; color: var(--accent3); text-align: center;
+    opacity: 0; transition: opacity 1.2s ease;
+    position: relative; z-index: 1; max-width: 540px;
+    line-height: 1.75; letter-spacing: .03em;
+    text-shadow: 0 0 18px rgba(160,144,112,.3);
+    margin-top: 8px;
+  }
+  #mem-final-thought.visible { opacity: 1; }
+
+  #mem-continue-hint {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: .3em;
+    text-transform: uppercase; color: var(--muted); text-align: center;
+    opacity: 0; transition: opacity .6s ease;
+    position: relative; z-index:1; margin-top: 14px;
+    animation: blink 1.3s ease-in-out infinite;
+  }
+  #mem-continue-hint.visible { opacity: 1; }
 
   /* Typewriter cursor */
   .cursor {
-    display:inline-block; width:2px; height:1em; background:var(--hot);
+    display:inline-block; width:2px; height:1em; background:var(--accent);
     margin-left:2px; vertical-align:text-bottom;
-    animation:cur-blink .5s step-end infinite;
-    box-shadow:0 0 6px rgba(255,45,107,.7);
+    animation:cur-blink .55s step-end infinite;
+    box-shadow:0 0 5px rgba(200,128,58,.6);
   }
   @keyframes cur-blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+  /* ═══════════════════════════════════════════════════════════
+     BATTLE OVERLAY — COIN CLASH SYSTEM
+  ═══════════════════════════════════════════════════════════ */
+  #battle-overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(4,2,2,.97); z-index: 30;
+    flex-direction: column; overflow: hidden;
+  }
+  #battle-overlay.active { display: flex; }
+  #battle-overlay::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(139,26,26,.018) 2px,rgba(139,26,26,.018) 3px);
+    pointer-events: none;
+  }
+  /* Vignette */
+  #battle-overlay::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 100% 100% at 50% 50%,transparent 45%,rgba(4,2,2,.65) 100%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* HUD strip */
+  #bt-hud {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 18px 7px; flex-shrink: 0;
+    border-bottom: 1px solid rgba(200,128,58,.1);
+    position: relative; z-index: 1;
+  }
+  .bt-side-info { display: flex; flex-direction: column; gap: 5px; width: 210px; }
+  .bt-side-info.enemy-info { align-items: flex-end; }
+  .bt-char-name-lbl {
+    font-family: 'Cinzel', serif; font-size: 8.5px; font-weight: 700;
+    letter-spacing: .5em; text-transform: uppercase;
+  }
+  .bt-char-name-lbl.kazki-lbl { color: var(--accent); text-shadow: 0 0 8px rgba(200,128,58,.45); }
+  .bt-char-name-lbl.enemy-lbl { color: var(--danger); text-shadow: 0 0 8px rgba(200,48,48,.45); }
+  .bt-hp-track { width: 100%; height: 4px; background: rgba(255,255,255,.04); border: 1px solid rgba(200,128,58,.14); }
+  .bt-hp-fill  { height: 100%; transition: width .5s ease, background .5s; }
+  #bt-kazki-hp-fill { background: linear-gradient(90deg,var(--accent2),var(--accent)); box-shadow: 0 0 5px rgba(200,128,58,.35); }
+  #bt-enemy-hp-fill { background: linear-gradient(90deg,#8c1a1a,var(--danger)); box-shadow: 0 0 5px rgba(200,48,48,.35); }
+  #bt-round-center {
+    font-family: 'Cinzel', serif; font-size: 8px; font-weight: 600;
+    letter-spacing: .4em; text-transform: uppercase;
+    color: rgba(90,74,64,.45); white-space: nowrap;
+  }
+
+  /* Arena */
+  #bt-arena {
+    flex: 1; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px; position: relative; z-index: 1; min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Character sides */
+  .bt-side { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 168px; }
+
+  /* Silhouettes */
+  /* (battle silhouette rules removed — headshots used instead) */
+
+  /* ── KAZKI HURT PORTRAIT (< 50 HP) ────────────────────── */
+  .bt-portrait-box {
+    position: relative;
+    border: 1px solid rgba(200,128,58,.18);
+    padding: 5px 8px 0;
+    background: rgba(8,4,4,.45);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: border-color .5s ease, box-shadow .5s ease, background .5s ease;
+  }
+  .bt-portrait-box.hurt-critical {
+    border-color: rgba(200,48,48,.55);
+    background: rgba(20,4,4,.55);
+    box-shadow: 0 0 18px rgba(200,48,48,.14), inset 0 0 14px rgba(200,48,48,.05);
+  }
+  /* Corner notch marks — PM-style damage indicators */
+  .bt-portrait-box::before,
+  .bt-portrait-box::after {
+    content: '';
+    position: absolute;
+    width: 6px; height: 6px;
+    opacity: 0;
+    transition: opacity .5s ease;
+  }
+  .bt-portrait-box::before {
+    top: -1px; left: -1px;
+    border-top: 1px solid var(--danger);
+    border-left: 1px solid var(--danger);
+  }
+  .bt-portrait-box::after {
+    bottom: -1px; right: -1px;
+    border-bottom: 1px solid var(--danger);
+    border-right: 1px solid var(--danger);
+  }
+  .bt-portrait-box.hurt-critical::before,
+  .bt-portrait-box.hurt-critical::after { opacity: .8; }
+
+  .bt-portrait-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7px; letter-spacing: .38em; text-transform: uppercase;
+    color: rgba(200,128,58,.4); margin-bottom: 5px;
+    transition: color .4s ease;
+  }
+  .bt-portrait-box.hurt-critical .bt-portrait-label {
+    color: rgba(200,48,48,.55);
+  }
+  .bt-portrait-status {
+    font-family: 'Cinzel', serif;
+    font-size: 7px; letter-spacing: .22em; text-transform: uppercase;
+    color: transparent; min-height: 16px;
+    transition: color .4s ease, text-shadow .4s ease;
+    text-align: center; padding: 3px 0 5px;
+  }
+  .bt-portrait-box.hurt-critical .bt-portrait-status {
+    color: var(--danger);
+    text-shadow: 0 0 8px rgba(200,48,48,.7);
+    animation: wound-pulse .9s ease-in-out infinite;
+  }
+  @keyframes wound-pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: .2; }
+  }
+
+
+  /* Card display under each character */
+  .bt-card-display {
+    background: rgba(10,6,6,.85); border: 1px solid rgba(200,128,58,.12);
+    padding: 6px 10px; width: 100%; text-align: center;
+    min-height: 50px; transition: border-color .3s, box-shadow .3s;
+  }
+  .bt-card-display.lit { border-color: rgba(200,128,58,.4); box-shadow: 0 0 10px rgba(200,128,58,.08); }
+  .bt-card-display.enemy-lit { border-color: rgba(200,48,48,.4); box-shadow: 0 0 10px rgba(200,48,48,.08); }
+  .bt-card-dname {
+    font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700;
+    letter-spacing: .22em; text-transform: uppercase;
+    color: var(--accent3); margin-bottom: 3px;
+  }
+  .bt-card-dpower {
+    font-family: 'Share Tech Mono', monospace; font-size: 10.5px;
+    color: rgba(212,200,184,.3); letter-spacing: .1em;
+  }
+
+  /* Coins */
+  .bt-coin-wrap { display: flex; align-items: center; justify-content: center; }
+  .bt-coin {
+    width: 46px; height: 46px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
+    border: 1.5px solid rgba(200,128,58,.25);
+    background: rgba(10,6,6,.9); color: rgba(212,200,184,.18);
+    transition: color .25s, border-color .25s, box-shadow .25s;
+    position: relative; overflow: hidden;
+  }
+  .bt-coin::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.05), transparent 60%);
+  }
+  .bt-coin.rolling {
+    animation: bt-coin-flip .48s steps(4) infinite;
+    color: rgba(212,200,184,.5);
+  }
+  @keyframes bt-coin-flip {
+    0%,100% { transform: scaleX(1); }
+    25%      { transform: scaleX(0.08); }
+    50%      { transform: scaleX(1); }
+    75%      { transform: scaleX(0.08); }
+  }
+  .bt-coin.coin-win {
+    color: var(--accent); border-color: rgba(200,128,58,.7);
+    box-shadow: 0 0 18px rgba(200,128,58,.35), inset 0 0 8px rgba(200,128,58,.08);
+    text-shadow: 0 0 10px rgba(200,128,58,.6);
+  }
+  .bt-coin.coin-loss {
+    color: var(--danger); border-color: rgba(200,48,48,.55);
+    box-shadow: 0 0 14px rgba(200,48,48,.25);
+    text-shadow: 0 0 8px rgba(200,48,48,.5);
+  }
+  .bt-coin.coin-tie {
+    color: var(--accent3); border-color: rgba(160,144,112,.45);
+    box-shadow: 0 0 10px rgba(160,144,112,.18);
+  }
+
+  /* Center zone */
+  #bt-center {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px;
+    padding: 0 8px; position: relative;
+  }
+  #bt-vs-icon {
+    font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+    letter-spacing: .5em; color: rgba(90,74,64,.25); text-transform: uppercase;
+    position: relative;
+  }
+  #bt-vs-icon::before, #bt-vs-icon::after {
+    content: ''; position: absolute; top: 50%;
+    height: 1px; background: linear-gradient(90deg,transparent,rgba(90,74,64,.18));
+    width: 50px;
+  }
+  #bt-vs-icon::before { right: calc(100% + 8px); }
+  #bt-vs-icon::after  { left:  calc(100% + 8px); transform: scaleX(-1); }
+
+  #bt-result-banner {
+    font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+    letter-spacing: .22em; text-transform: uppercase;
+    text-align: center; min-height: 20px; opacity: 0;
+    transition: opacity .4s ease;
+  }
+  #bt-result-banner.show       { opacity: 1; }
+  #bt-result-banner.res-win    { color: var(--accent);  text-shadow: 0 0 14px rgba(200,128,58,.7); }
+  #bt-result-banner.res-loss   { color: var(--danger);  text-shadow: 0 0 14px rgba(200,48,48,.6);  }
+  #bt-result-banner.res-tie    { color: var(--accent3); text-shadow: 0 0 10px rgba(160,144,112,.5); }
+  #bt-result-banner.res-final  { color: #c83060;        text-shadow: 0 0 18px rgba(200,48,96,.6); letter-spacing: .32em; }
+
+  #bt-flavor {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 13px; color: rgba(90,74,64,.75); text-align: center;
+    max-width: 240px; line-height: 1.7; min-height: 52px;
+    transition: opacity .35s ease;
+  }
+
+  /* Clash vs-line animation */
+  #bt-clash-line {
+    width: 0; height: 1px; background: linear-gradient(90deg,var(--accent2),var(--danger));
+    transition: width .45s ease; box-shadow: 0 0 6px rgba(200,48,48,.5);
+    max-width: 200px;
+  }
+  #bt-clash-line.active { width: 200px; }
+
+  /* Player cards at bottom */
+  #bt-bottom { flex-shrink: 0; border-top: 1px solid rgba(200,128,58,.1); position: relative; z-index: 1; }
+  #bt-instruction {
+    font-family: 'Cinzel', serif; font-size: 8.5px; letter-spacing: .45em;
+    text-transform: uppercase; color: rgba(90,74,64,.38);
+    text-align: center; padding: 6px 0 4px;
+  }
+  #bt-cards-row {
+    padding: 0 10px 10px; display: flex; gap: 7px; justify-content: center;
+  }
+  .bt-player-card {
+    flex: 1; max-width: 185px;
+    background: rgba(14,8,8,.85); border: 1px solid rgba(200,128,58,.18);
+    padding: 8px 10px; cursor: pointer; transition: all .18s;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 2px;
+    text-align: left;
+  }
+  .bt-player-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--accent); transform: scaleY(0); transition: transform .15s;
+  }
+  .bt-player-card:hover:not(:disabled) { background: rgba(200,128,58,.07); border-color: rgba(200,128,58,.42); }
+  .bt-player-card:hover:not(:disabled)::before { transform: scaleY(1); }
+  .bt-player-card:disabled,
+  .bt-player-card.bt-disabled { opacity: .28; cursor: default; pointer-events: none; }
+  .bt-player-card.bt-selected  { border-color: rgba(200,128,58,.65); background: rgba(200,128,58,.07); box-shadow: 0 0 12px rgba(200,128,58,.12); }
+  .bt-player-card.bt-selected::before { transform: scaleY(1); }
+  .bt-pcard-name {
+    font-family: 'Cinzel', serif; font-size: 9.5px; font-weight: 700;
+    letter-spacing: .22em; color: var(--accent); text-transform: uppercase;
+  }
+  .bt-pcard-range {
+    font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    color: rgba(212,200,184,.42); letter-spacing: .1em;
+  }
+  .bt-pcard-desc {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 11px; color: rgba(90,74,64,.85); line-height: 1.4; margin-top: 2px;
+  }
+  .bt-pcard-tag {
+    font-family: 'Cinzel', serif; font-size: 8.5px; letter-spacing: .18em;
+    margin-top: 3px; text-transform: uppercase;
+  }
+  .bt-pcard-tag.cost  { color: var(--danger); }
+  .bt-pcard-tag.guard { color: #6a8a6a; }
+  .bt-pcard-tag.risky { color: #8b3a3a; }
+  .bt-pcard-tag.weaken { color: var(--accent3); }
+
+  #bt-continue-hint {
+    font-family: 'Cinzel', serif; font-size: 9px; font-weight: 600;
+    letter-spacing: .35em; text-transform: uppercase;
+    color: var(--muted); text-align: center;
+    padding: 6px 0 7px; display: none; cursor: pointer;
+    animation: blink 1.3s ease-in-out infinite;
+    border-top: 1px solid rgba(200,128,58,.07);
+  }
+  #bt-continue-hint.bt-visible { display: block; }
+
+  #bt-flash {
+    position: absolute; inset: 0; z-index: 36;
+    opacity: 0; pointer-events: none; transition: opacity .05s;
+  }
+
+  /* ── SANITY VIGNETTE — pulsing dark corners when Kazki is losing it ── */
+  #vignette-pulse {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 998;
+    background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 40%, rgba(0,0,0,.92) 100%);
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  #vignette-pulse.active {
+    animation: vignette-breathe 2.2s ease-in-out infinite;
+  }
+  @keyframes vignette-breathe {
+    0%, 100% { opacity: 0.15; }
+    50%       { opacity: 0.80; }
+  }
+
+  /* ── BATTLE HEADSHOTS ── */
+  /*
+   *  HEADSHOT PLACEHOLDER SYSTEM
+   *  ───────────────────────────
+   *  Replace the src="" below in BATTLE_HEADSHOTS (in <script>) with your
+   *  own image paths. Headshots are cropped to a square frame and displayed
+   *  at 110 × 110 px inside the battle HUD.
+   *
+   *  RECOMMENDED SPRITE SIZE:  160 × 160 px  transparent PNG
+   *  The image is object-fit: cover, anchored to the top-center, so crop your
+   *  art to show the face / head area — bust-up art works best.
+   *  Wider art will be center-cropped; taller art will be top-cropped.
+   */
+  .bt-headshot-frame {
+    width: 110px; height: 110px;
+    border: 1px solid rgba(200,128,58,.25);
+    background: rgba(6,4,4,.7);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .bt-headshot-frame.enemy-frame {
+    border-color: rgba(139,26,26,.3);
+  }
+  .bt-headshot-img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: top center;
+    display: block;
+    position: absolute; inset: 0;
+    transition: opacity 0.4s ease;
+  }
+  /* Normal layer sits on top by default; wounded layer fades in underneath */
+  .bt-headshot-img.hs-normal  { z-index: 2; opacity: 1; }
+  .bt-headshot-img.hs-wounded { z-index: 1; opacity: 0; }
+  /* When frame is hurt-critical, swap them */
+  .bt-headshot-frame.hurt-critical .bt-headshot-img.hs-normal  { opacity: 0; }
+  .bt-headshot-frame.hurt-critical .bt-headshot-img.hs-wounded { opacity: 1; }
+  /* Fallback: if no wounded img exists, keep normal visible even when hurt */
+  .bt-headshot-frame.hurt-critical.no-wounded-img .bt-headshot-img.hs-normal { opacity: 1; }
+  /* Placeholder shown when no image is loaded */
+  .bt-headshot-placeholder {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    z-index: 3; /* sits above both img layers */
+  }
+  /* Wounded placeholder — shown instead of normal placeholder when hurt-critical */
+  .bt-headshot-placeholder.hs-wounded-placeholder {
+    display: none;
+    z-index: 3;
+  }
+  .bt-headshot-frame.hurt-critical .bt-headshot-placeholder:not(.hs-wounded-placeholder) { display: none; }
+  .bt-headshot-frame.hurt-critical .bt-headshot-placeholder.hs-wounded-placeholder { display: flex; }
+  .bt-hs-head {
+    width: 42px; height: 48px; border-radius: 46% 46% 40% 40%;
+    border: 1px solid;
+  }
+  .bt-hs-shoulders {
+    width: 72px; height: 32px;
+    clip-path: polygon(10% 0%,90% 0%,100% 100%,0% 100%);
+    border-top: 1px solid;
+  }
+  /* Kazki — amber */
+  .bt-headshot-frame:not(.enemy-frame) .bt-hs-head {
+    background: rgba(200,128,58,.1); border-color: rgba(200,128,58,.4);
+    box-shadow: 0 0 10px rgba(200,128,58,.12);
+  }
+  .bt-headshot-frame:not(.enemy-frame) .bt-hs-shoulders {
+    background: rgba(30,18,8,.85); border-color: rgba(200,128,58,.25);
+  }
+  /* Enforcer — blood red */
+  .bt-headshot-frame.enemy-frame .bt-hs-head {
+    background: rgba(139,26,26,.12); border-color: rgba(200,48,48,.45);
+    box-shadow: 0 0 10px rgba(200,48,48,.15);
+  }
+  .bt-headshot-frame.enemy-frame .bt-hs-shoulders {
+    background: rgba(28,8,8,.9); border-color: rgba(200,48,48,.3);
+  }
+  /* Hurt states */
+  .bt-headshot-frame.hurt-critical {
+    border-color: rgba(200,48,48,.6);
+    box-shadow: 0 0 12px rgba(200,48,48,.2);
+  }
+  /* Wounded placeholder — Kazki's head is tilted, red-tinted */
+  .hs-wounded-placeholder .bt-hs-head {
+    background: rgba(200,48,48,.14) !important;
+    border-color: rgba(200,48,48,.65) !important;
+    box-shadow: 0 0 14px rgba(200,48,48,.3), inset 0 0 8px rgba(200,48,48,.08) !important;
+    transform: rotate(-8deg) translateX(-4px);
+  }
+  .hs-wounded-placeholder .bt-hs-shoulders {
+    background: linear-gradient(160deg, rgba(55,8,8,.97), rgba(25,3,3,.99)) !important;
+    border-color: rgba(200,48,48,.45) !important;
+    transform: rotate(-4deg) translateX(-2px);
+  }
 </style>
 </head>
 <body>
@@ -604,26 +1267,25 @@
 
   <!-- ══ TITLE ══════════════════════════════════════════════ -->
   <div id="title-screen">
-    <div class="title-tag">A Visual Novel with Quick Time Events</div>
-    <h1>NEON<br>FRACTURE</h1>
+    <div class="title-tag">A Visual Novel</div>
+    <h1>KAZKI</h1>
     <div class="title-divider"></div>
-    <p class="subtitle">The city never sleeps. Neither do its secrets. You've got one night to find who wants you dead.</p>
-    <button id="start-btn" onclick="startGame()">▸ JACK IN</button>
+    <button id="start-btn" onclick="startGame()">▸ Begin</button>
   </div>
 
   <!-- ══ END ════════════════════════════════════════════════ -->
   <div id="end-screen">
-    <div id="end-tag">Case Closed</div>
+    <div id="end-tag">End of Chapter</div>
     <div id="end-title"></div>
     <div id="end-summary"></div>
-    <button id="replay-btn" onclick="replay()">▸ Replay</button>
+    <button id="replay-btn" onclick="replay()">▸ Read Again</button>
   </div>
 
   <!-- ══ HUD ════════════════════════════════════════════════ -->
   <div id="hud">
-    <span id="hud-chapter">ACT 01 // NEON DISTRICT</span>
+    <span id="hud-chapter">Prologue // The Backstreets</span>
     <div class="hbar-wrap">
-      <span>VITALS</span>
+      <span>Vitality</span>
       <div class="hbar"><div class="hbar-fill" id="hbar-fill"></div></div>
     </div>
   </div>
@@ -631,97 +1293,249 @@
   <!-- ══ SCENE ══════════════════════════════════════════════ -->
   <div id="scene-visual">
 
-    <!-- ── BACKGROUND: STREET ──────────────────────────────
-         To use a real image: set --img-bg-street in :root   
-         OR swap the src attribute on the <img> below.       
-         The .bg-fallback div is hidden once the img loads.  -->
-    <div class="scene-bg active" id="bg-street">
-      <!-- IMAGE SLOT: replace '' with your image path/URL -->
-      <img class="bg-img" id="img-bg-street" src="" alt=""
-           onerror="this.style.display='none'"
-           onload="this.nextElementSibling.style.display='none'">
-      <!-- CSS fallback (hidden when image loads) -->
+    <!-- BACKGROUND: ALLEY -->
+    <div class="scene-bg active" id="bg-alley">
       <div class="bg-fallback"></div>
-      <!-- Neon signs overlay — shown regardless of bg type -->
-      <div class="street-signs">
-        <div class="sign sign-1">酒場 BAR-7</div>
-        <div class="sign sign-2">// NETLINK NODE 4 //</div>
-        <div class="sign sign-3">電脳 DATASYNC</div>
+      <div class="alley-signs">
       </div>
     </div>
 
-    <!-- ── BACKGROUND: BAR ─────────────────────────────────
-         IMAGE SLOT: replace '' with your image path/URL     -->
-    <div class="scene-bg" id="bg-bar">
-      <img class="bg-img" id="img-bg-bar" src="" alt=""
-           onerror="this.style.display='none'"
-           onload="this.nextElementSibling.style.display='none'">
+    <!-- BACKGROUND: STORE -->
+    <div class="scene-bg" id="bg-store">
       <div class="bg-fallback"></div>
     </div>
 
-    <!-- ── RAIN (canvas, always on top) ──────────────────── -->
-    <canvas id="rain-canvas"></canvas>
+    <div class="scene-bg" id="bg-kazki-cry">
+      <div class="bg-fallback"></div>
+    </div>
 
-    <!-- ── CHARACTER PORTRAITS ────────────────────────────
-         IMAGE SLOT: replace '' with your sprite path/URL.
-         Use transparent PNG for best results.
-         The .sprite-fallback is hidden when the img loads. -->
+    <div class="scene-bg" id="bg-kazki-resolute">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-kazki-wait">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-kazki-ripthehomie">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-inside-store">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-kazki-tweak">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-main-street">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat1">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat2">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat3">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat4">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat5">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat6">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat7">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat8">
+      <div class="bg-fallback"></div>
+    </div>
+
+    <div class="scene-bg" id="bg-beat9">
+      <div class="bg-fallback"></div>
+    </div>
+
+    
+
+    <!-- PORTRAIT CONTAINER -->
     <div id="portrait-container">
 
-      <!-- KIRA sprite -->
-      <div class="portrait char-kira" id="portrait-kira">
-        <!-- IMAGE SLOT -->
-        <img class="sprite-img" id="img-sprite-kira" src="" alt="Kira"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
-             onload="this.nextElementSibling.style.display='none'">
-        <!-- CSS fallback -->
-        <div class="sprite-fallback">
-          <div class="hair-side"></div>
-          <div class="hair"></div>
-          <div class="head">
-            <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
-            <div class="augment"></div>
-          </div>
-          <div class="neck"></div>
-          <div class="coat"><div class="coat-stripe"></div></div>
-          <div class="cyber-arm"></div>
-        </div>
-      </div>
+      <!-- KAZKI — 5 expressions (content injected by JS from SPRITES config) -->
+      <div class="portrait slot-left" id="portrait-kazki-1"></div>
+      <div class="portrait slot-left" id="portrait-kazki-2"></div>
+      <div class="portrait slot-left" id="portrait-kazki-3"></div>
+      <div class="portrait slot-left" id="portrait-kazki-4"></div>
+      <div class="portrait slot-left" id="portrait-kazki-5"></div>
+      <div class="portrait slot-left" id="portrait-kazki-6"></div>
+      <div class="portrait slot-left" id="portrait-kazki-7"></div>
+      <div class="portrait slot-left" id="portrait-kazki-8"></div>
 
-      <!-- RYKER sprite -->
-      <div class="portrait char-ryker" id="portrait-ryker">
-        <!-- IMAGE SLOT -->
-        <img class="sprite-img" id="img-sprite-ryker" src="" alt="Ryker"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"
-             onload="this.nextElementSibling.style.display='none'">
-        <!-- CSS fallback -->
-        <div class="sprite-fallback">
-          <div class="hair"></div>
-          <div class="head">
-            <div class="data-visor"></div>
-            <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
-            <div class="scar"></div>
-          </div>
-          <div class="jacket"><div class="badge"></div></div>
-        </div>
-      </div>
+      <!-- AKIZET — 5 expressions -->
+      <div class="portrait slot-right"  id="portrait-aki-1"></div>
+      <div class="portrait slot-right"  id="portrait-aki-2"></div>
+      <div class="portrait slot-right"  id="portrait-aki-3"></div>
+      <div class="portrait slot-right"  id="portrait-aki-4"></div>
+      <div class="portrait slot-right"  id="portrait-aki-5"></div>
+
+      <!-- ??? — 2 expressions -->
+      <div class="portrait slot-center" id="portrait-unk-1"></div>
+      <div class="portrait slot-center" id="portrait-unk-2"></div>
+      <div class="portrait slot-center" id="portrait-unk-3"></div>
 
     </div><!-- /portrait-container -->
 
-    <!-- QTE -->
-    <div id="qte-overlay">
-      <div id="qte-label">— QUICK TIME EVENT —</div>
-      <div id="qte-prompt">ACT NOW!</div>
-      <div id="qte-key">E</div>
-      <div id="qte-bar-wrap"><div id="qte-bar"></div></div>
-      <div id="qte-mash-section">
-        <div id="qte-mash-hint">Mash [SPACE] or tap to fill!</div>
-        <div id="qte-mash-bar-wrap"><div id="qte-mash-bar"></div></div>
+    <!-- STALK MINIGAME OVERLAY -->
+    <div id="stalk-overlay">
+      <div id="stalk-bar-wrap">
+        <div id="stalk-bar-label">Composure</div>
+        <div id="stalk-bar-track"><div id="stalk-bar-fill"></div></div>
       </div>
-      <div id="qte-result"></div>
+      <div id="stalk-target-label">TARGET  01 / 03</div>
+      <div id="stalk-flavor">He's distracted. Watch the rhythm of his footsteps.</div>
+      <div id="stalk-arena">
+        <div id="stalk-zone"></div>
+        <div id="stalk-grunt">
+          <!-- sprite sheet layer — sits on top of / replaces the CSS silhouette when a src is set -->
+          <div id="stalk-grunt-sprite"></div>
+          <div class="grunt-fig">
+            <div class="grunt-head"></div>
+            <div class="grunt-neck"></div>
+            <div class="grunt-body"></div>
+          </div>
+        </div>
+        <div id="stalk-alert">! LOOKING !</div>
+      </div>
+      <button id="stalk-btn" onclick="stalkStrike()">▸ STRIKE</button>
+      <div id="stalk-result"></div>
+      <div id="stalk-flash"></div>
     </div>
 
+    <!-- MEMORY MINIGAME OVERLAY -->
+    <div id="memory-overlay">
+      <div id="mem-breath-ring"></div>
+      <div id="mem-title">— Interlude // The Weight of It —</div>
+      <div id="mem-subtitle">These thoughts will slow you down.<br>Bury what you cannot carry.</div>
+      <div id="mem-thought-field"></div>
+      <div id="mem-instruction">Select the thoughts you can set aside</div>
+      <div id="mem-gauge-wrap">
+        <div id="mem-gauge-label">Composure</div>
+        <div id="mem-gauge-track"><div id="mem-gauge-fill"></div></div>
+      </div>
+      <div id="mem-echo"></div>
+      <div id="mem-final-thought"></div>
+      <div id="mem-continue-hint">[ click or space to continue ]</div>
+    </div>
+
+    <!-- ══ BATTLE OVERLAY — COIN CLASH ══════════════════════════ -->
+    <div id="battle-overlay">
+      <!-- HUD -->
+      <div id="bt-hud">
+        <div class="bt-side-info">
+          <div class="bt-char-name-lbl kazki-lbl">Kazki</div>
+          <div class="bt-hp-track"><div class="bt-hp-fill" id="bt-kazki-hp-fill" style="width:100%"></div></div>
+        </div>
+        <div id="bt-round-center">— Round <span id="bt-round-num">1</span> / 7 —</div>
+        <div class="bt-side-info enemy-info">
+          <div class="bt-char-name-lbl enemy-lbl">Enforcer</div>
+          <div class="bt-hp-track"><div class="bt-hp-fill" id="bt-enemy-hp-fill" style="width:100%"></div></div>
+        </div>
+      </div>
+
+      <!-- Arena -->
+      <div id="bt-arena">
+
+        <!-- KAZKI side -->
+        <div class="bt-side">
+          <div class="bt-portrait-box" id="bt-kazki-portrait-box">
+            <div class="bt-portrait-label">Kazki</div>
+            <!-- HEADSHOT PLACEHOLDER — replace src via BATTLE_HEADSHOTS config in script -->
+            <!--
+              KAZKI HEADSHOT SIZES:
+                kazki.src         — normal state  — 160×160 px transparent PNG
+                kazki_wounded.src — wounded state  — 160×160 px transparent PNG
+              Both display at 110×110 px, object-fit: cover, anchored top-center.
+              Bust-up art (head + shoulders) works best.
+              The wounded sprite fades in when Kazki drops below 50 HP.
+            -->
+            <div class="bt-headshot-frame" id="bt-kazki-headshot">
+              <!-- Normal state image -->
+              <!-- Normal state placeholder (shown when no image src set) -->
+              <div class="bt-headshot-placeholder" id="bt-kazki-hs-placeholder">
+                <div class="bt-hs-head"></div>
+                <div class="bt-hs-shoulders"></div>
+              </div>
+              <!-- Wounded state placeholder (shown when no wounded image src set and HP < 50) -->
+              <div class="bt-headshot-placeholder hs-wounded-placeholder" id="bt-kazki-hs-wounded-placeholder">
+                <div class="bt-hs-head"></div>
+                <div class="bt-hs-shoulders"></div>
+              </div>
+            </div>
+            <div class="bt-portrait-status" id="bt-kazki-status"></div>
+          </div>
+          <div class="bt-card-display" id="bt-kazki-card-disp">
+            <div class="bt-card-dname" id="bt-kcard-name">—</div>
+            <div class="bt-card-dpower" id="bt-kcard-power">awaiting</div>
+          </div>
+          <div class="bt-coin-wrap">
+            <div class="bt-coin" id="bt-k-coin">?</div>
+          </div>
+        </div>
+
+        <!-- CENTER -->
+        <div id="bt-center">
+          <div id="bt-vs-icon">✕</div>
+          <div id="bt-clash-line"></div>
+          <div id="bt-result-banner"></div>
+          <div id="bt-flavor">Brace yourself.</div>
+        </div>
+
+        <!-- ENFORCER side -->
+        <div class="bt-side">
+          <!-- HEADSHOT PLACEHOLDER — replace src via BATTLE_HEADSHOTS config in script -->
+          <div class="bt-headshot-frame enemy-frame" id="bt-enf-headshot">
+            <div class="bt-headshot-placeholder" id="bt-enf-hs-placeholder">
+              <div class="bt-hs-head"></div>
+              <div class="bt-hs-shoulders"></div>
+            </div>
+          </div>
+          <div class="bt-card-display enemy-lit" id="bt-enemy-card-disp">
+            <div class="bt-card-dname" id="bt-ecard-name">—</div>
+            <div class="bt-card-dpower" id="bt-ecard-power">??</div>
+          </div>
+          <div class="bt-coin-wrap">
+            <div class="bt-coin" id="bt-e-coin">?</div>
+          </div>
+        </div>
+
+      </div><!-- /bt-arena -->
+
+      <!-- Player cards -->
+      <div id="bt-bottom">
+        <div id="bt-instruction">— Choose Your Response —</div>
+        <div id="bt-cards-row"></div>
+        <div id="bt-continue-hint">[ click to continue ]</div>
+      </div>
+
+      <div id="bt-flash"></div>
+    </div><!-- /battle-overlay -->
+
     <div id="flash"></div>
+    <!-- SANITY VIGNETTE — toggled by JS during walk-to-store -->
+    <div id="vignette-pulse"></div>
   </div><!-- /scene-visual -->
 
   <!-- ══ DIALOGUE ═══════════════════════════════════════════ -->
@@ -729,7 +1543,7 @@
     <div id="dialogue-inner">
       <div id="speaker-name"></div>
       <div id="dialogue-text"></div>
-      <div id="continue-hint">[ tap or space to continue ]</div>
+      <div id="continue-hint">[ click or space to continue ]</div>
     </div>
   </div>
 
@@ -739,353 +1553,2394 @@
 </div><!-- /game -->
 
 <script>
-// ════════════════════════════════════════════════════════════
-//  IMAGE CONFIGURATION
-//  Set paths/URLs here to swap in real backgrounds & sprites.
-//  Leave a value as '' to use the built-in CSS fallback.
-// ════════════════════════════════════════════════════════════
-const IMAGES = {
-  backgrounds: {
-    street: '',   // e.g. 'images/street_night.jpg'
-    bar:    '',   // e.g. 'images/bar_interior.jpg'
-  },
-  sprites: {
-    kira:  '',    // e.g. 'images/kira_neutral.png'
-    ryker: '',    // e.g. 'images/ryker_neutral.png'
-  }
+// ╔══════════════════════════════════════════════════════════════╗
+// ║                     ASSET CONFIGURATION                      ║
+// ║  This is the only section you need to edit to swap in your   ║
+// ║  own sprites and backgrounds. Everything else is automatic.  ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+// ── SPRITES ────────────────────────────────────────────────────
+//  Set src to a relative path (e.g. 'images/kazki_sad.png') or
+//  a full URL. Transparent PNGs work best — characters are
+//  anchored to the bottom of the portrait frame automatically.
+//  Leave src as '' to keep the animated silhouette placeholder.
+// ───────────────────────────────────────────────────────────────
+const SPRITES = {
+  // KAZKI (5 expressions)
+  'kazki-1':  { src: 'images/kazki_casual.png', label: 'Kazki'  },  // distressed
+  'kazki-2':  { src: 'images/kazki_smug.png', label: 'Kazki'  },  // frozen
+  'kazki-3':  { src: 'images/kazki_nervous_smug.png', label: 'Kazki'  },  // resolute
+  'kazki-4':  { src: 'images/kazki_nervous_talk.png', label: 'Kazki'  },  // at ease
+  'kazki-5':  { src: 'images/kazki_casual_talk.png', label: 'Kazki'  },  // wounded
+  'kazki-6':  { src: 'images/kazki_surprise.png', label: 'Kazki'  },  // fading
+  'kazki-7':  { src: 'images/kazki_uneasy.png', label: 'Kazki'  },  // fading
+  'kazki-8':  { src: 'images/kazki_really_uneasy.png', label: 'Kazki'  },  // fading
+
+  // AKIZET (5 expressions)
+  'aki-1':    { src: 'images/akizet_sheepish.png', label: 'Akizet' },  // startled
+  'aki-2':    { src: 'images/akizet_smile.png', label: 'Akizet' },  // smiling
+  'aki-3':    { src: 'images/akizet_nervous_talk.png', label: 'Akizet' },  // alarmed
+  'aki-4':    { src: 'images/akizet_calm_smile.png', label: 'Akizet' },  // hurt
+  'aki-5':    { src: 'images/akizet_nervous.png', label: 'Akizet' },  // pensive
+
+  // ??? (2 expressions)
+  'unk-1':    { src: 'images/grunt_neutral.png', label: '???'    },  // threatening
+  'unk-2':    { src: 'images/grunt_smirk.png', label: '???'    },  // contemptuous
+  'unk-3':    { src: 'images/grunt_surprised.png', label: '???'    },  // contemptuous
 };
 
-// Apply image sources on load
-(function applyImages() {
-  for (const [key, src] of Object.entries(IMAGES.backgrounds)) {
-    const el = document.getElementById('img-bg-' + key);
-    if (el && src) el.src = src;
-  }
-  for (const [key, src] of Object.entries(IMAGES.sprites)) {
-    const el = document.getElementById('img-sprite-' + key);
-    if (el && src) el.src = src;
-  }
-})();
+// ── BACKGROUNDS ────────────────────────────────────────────────
+//  Set src to an image path/URL to replace the CSS-drawn scene.
+//  The image will cover the full scene area (cover sizing).
+//  Leave src as '' to keep the built-in procedural background.
+//
+//  'alley' — used during the prologue (dark backstreet alley)
+//  'store' — used during chapter one (street / store exterior)
+// ───────────────────────────────────────────────────────────────
+const BACKGROUNDS = {
+  'beat1': { src: 'images/bg_beat1.png' },
+  'beat2': { src: 'images/bg_beat2.png' },
+  'beat3': { src: 'images/bg_beat3.png' },
+  'beat4': { src: 'images/bg_beat4.png' },
+  'beat5': { src: 'images/bg_beat5.png' },
+  'beat6': { src: 'images/bg_beat6.png' },
+  'beat7': { src: 'images/bg_beat7.png' },
+  'beat8': { src: 'images/bg_beat8.png' },
+  'beat9': { src: 'images/bg_beat9.png' },
+  'kazki-wait': { src: 'images/bg_kazki_wait.png' },
+  'kazki-ripthehomie': { src: 'images/bg_kazki_ripthehomie.png' },
+  'kazki-tweak': { src: 'images/bg_kazki_tweak.png' },
+  'kazki-cry': { src: 'images/bg_kazki_tweak2.png' },
+  'kazki-resolute': { src: 'images/bg_kazki_tweak3.png' },
+  'alley': { src: 'images/bg_alley2.png' },
+  'inside-store': { src: 'images/bg_inside_store.png' },
+  'main-street': { src: 'images/bg_main_street.png' },
+  'store': { src: 'images/bg_outside_store.png' },
+};
 
-// ── Rain ─────────────────────────────────────────────────────
-const rainCanvas = document.getElementById('rain-canvas');
-const rctx = rainCanvas.getContext('2d');
-let drops = [];
+// ── GRUNT SPRITES ───────────────────────────────────────────
+//  Set f1–f4 to the path/URL for each walk frame (32×32 transparent PNG).
+//  Frames are displayed at 40×90px (the grunt container size) —
+//  they'll be upscaled with pixelated rendering to stay crisp.
+//  If you want to preserve the square ratio, change background-size
+//  to 'contain' in the #stalk-grunt-sprite CSS rule.
+//
+//  Leave ALL four as '' to keep the CSS silhouette placeholder instead.
+//  Even one missing frame will fall back to the silhouette.
+//
+//  fps controls how fast the cycle plays (frames per second).
+//  Recommended range:  4 (slow lumber) → 10 (nervous shuffle)
+// ─────────────────────────────────────────────────────────────
+const GRUNT_SPRITES = {
+  grunt1: {                         // Target 01 — distracted, slow patrol
+    f1: 'images/grunt1_f1.png', f2: 'images/grunt1_f2.png', f3: 'images/grunt1_f3.png', f4: 'images/grunt1_f4.png',
+    fps: 6,
+  },
+  grunt2: {                         // Target 02 — bigger, bored, lumbering
+    f1: 'images/grunt2_f1.png', f2: 'images/grunt2_f2.png', f3: 'images/grunt2_f3.png', f4: 'images/grunt2_f4.png',
+    fps: 5,
+  },
+  grunt3: {                         // Target 03 — nervous, quicker steps
+    f1: 'images/grunt3_f1.png', f2: 'images/grunt3_f2.png', f3: 'images/grunt3_f3.png', f4: 'images/grunt3_f4.png',
+    fps: 8,
+  },
+};
 
-function initRain() {
-  rainCanvas.width = 820; rainCanvas.height = 430;
-  drops = [];
-  for (let i = 0; i < 120; i++) {
-    drops.push({ x: Math.random()*820, y: Math.random()*430, len: 8+Math.random()*18, speed: 6+Math.random()*10, opacity: 0.1+Math.random()*0.35 });
+// ── BATTLE HEADSHOTS ────────────────────────────────────────
+//  Set src to a relative path or full URL for each character's
+//  headshot/bust image used in the Coin Clash battle overlay.
+//
+//  RECOMMENDED SIZE:  160 × 160 px  transparent PNG
+//  The image is cropped to a 110×110 px square frame,
+//  anchored to the top-center — so keep the face near the top.
+//  Bust-up artwork (head + shoulders) works best.
+//
+//  Leave src as '' to keep the animated silhouette placeholder.
+// ─────────────────────────────────────────────────────────────
+const BATTLE_HEADSHOTS = {
+  kazki:         { src: 'images/kazki_headshot.png' },   // Kazki — normal state        — 160×160 px transparent PNG
+  kazki_wounded: { src: 'images/kazki_wounded_headshot.png' },   // Kazki — wounded (< 50 HP)   — 160×160 px transparent PNG
+  enforcer:      { src: 'images/unknown_headshot.png' },   // Enforcer                    — 160×160 px transparent PNG
+};
+
+// ── Load headshots into the battle overlay ───────────────────
+function applyBattleHeadshots() {
+  // Helper: inject or update a positioned img inside a frame
+  function setFrameImg(frame, placeholder, cfg, extraClass) {
+    if (!frame) return;
+    let img = frame.querySelector('img' + (extraClass ? '.' + extraClass : ':not([class*="hs-"])'));
+    if (cfg && cfg.src) {
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'bt-headshot-img' + (extraClass ? ' ' + extraClass : '');
+        img.alt = '';
+        frame.appendChild(img);
+      }
+      img.src = cfg.src;
+      if (placeholder) placeholder.style.display = 'none';
+    } else {
+      if (img) img.remove();
+      if (placeholder) placeholder.style.display = '';
+    }
+  }
+
+  const kFrame  = document.getElementById('bt-kazki-headshot');
+  const enfFrame = document.getElementById('bt-enf-headshot');
+
+  // Kazki normal
+  setFrameImg(
+    kFrame,
+    document.getElementById('bt-kazki-hs-placeholder'),
+    BATTLE_HEADSHOTS.kazki,
+    'hs-normal'
+  );
+
+  // Kazki wounded — layered beneath the normal one
+  setFrameImg(
+    kFrame,
+    document.getElementById('bt-kazki-hs-wounded-placeholder'),
+    BATTLE_HEADSHOTS.kazki_wounded,
+    'hs-wounded'
+  );
+  // Flag the frame so the CSS fallback knows whether a wounded sprite is loaded
+  if (kFrame) {
+    if (BATTLE_HEADSHOTS.kazki_wounded && BATTLE_HEADSHOTS.kazki_wounded.src) {
+      kFrame.classList.remove('no-wounded-img');
+    } else {
+      kFrame.classList.add('no-wounded-img');
+    }
+  }
+
+  // Enforcer
+  setFrameImg(
+    enfFrame,
+    document.getElementById('bt-enf-hs-placeholder'),
+    BATTLE_HEADSHOTS.enforcer,
+    'hs-normal'
+  );
+}
+// ════════════════════════════════════════════════════════════
+//  AUDIO CONFIGURATION
+//  Set each src to a path or URL (.mp3 recommended).
+//  Leave src as '' to silence that slot silently.
+//  volume: 0.0 (silent) → 1.0 (full).
+// ════════════════════════════════════════════════════════════
+const AUDIO = {
+
+  // ── SOUND EFFECTS ──────────────────────────────────────────
+
+  snd_kneel: {
+    src: 'audio/thud.mp3',          // Kazki falls to her knees over her father's body
+    volume: 0.8,
+  },
+
+  snd_strike: {
+    src: '',                         // Kazki successfully takes down a grunt
+    volume: 0.9,
+  },
+
+  snd_memory: {
+    src: 'audio/ding.mp3',                         // A memory is suppressed in the memory minigame
+    volume: 0.3,
+  },
+
+  snd_shield: {
+    src: 'audio/shield.mp3',                         // Kazki throws herself between Aki and the bat
+    volume: 1.0,
+  },
+
+  snd_tackle: {
+    src: 'audio/tackle.mp3',                         // Kazki lunges at the man full force
+    volume: 1.0,
+  },
+
+  // ── BATTLE SOUND EFFECTS ───────────────────────────────────
+
+  snd_dice_roll: {
+    src: 'audio/snap.mp3',                         // PLACEHOLDER — plays when the dice rolls each round
+    volume: 0.7,                     // Recommended: a quick rattling / tumble sound
+  },
+
+    snd_clash_tie: {
+    src: 'audio/clash.mp3',      // Play when Kazki ties with the enforcer
+    volume: 0.65,
+  },
+
+  snd_kazki_win: {
+    src: 'audio/kazkiwin.mp3',                         // PLACEHOLDER — plays when Kazki wins a clash round
+    volume: 0.9,                     // Recommended: a short sharp impact / triumph hit
+  },
+
+  // ── SCENE MUSIC (looping) ──────────────────────────────────
+  //  Each track loops from the moment its scene begins and fades
+  //  out automatically when switching to the next scene track.
+  //  Swap in your own .mp3 paths below.
+
+  music_searching: {
+    src: 'audio/searching.mp3',                         // PLACEHOLDER — loops while Kazki searches for her father
+    volume: 0.35,                    // Recommended: tense, quiet, somber ambient
+  },
+
+  music_casual: {
+    src: 'audio/casual.mp3',                         // PLACEHOLDER — loops during casual store / street scenes
+    volume: 0.32,                    // Recommended: low-key, melancholic but not oppressive
+  },
+
+  music_battle: {
+    src: 'audio/battle.mp3',                         // PLACEHOLDER — loops during the Coin Clash battle
+    volume: 0.30,                    // Recommended: urgent, percussive, rising tension
+  },
+
+    music_struggle: {
+    src: 'audio/struggle.mp3',       // Darker, more dissonant, internal turmoil
+    volume: 0.28,                    // Slightly quieter to feel more internal/subtle
+  },
+
+    music_aftermath: {
+    src: 'audio/afterbattle.mp3',      // Empty, hollow, exhausted - like the silence after a storm
+    volume: 0.30,                    // Soft, almost ambient
+  },
+};
+
+// ── Audio engine ───────────────────────────────────────────
+//  Internal — you don't need to edit below this line.
+
+// Replace the entire Audio engine section (from "Audio engine with smooth fades" down to just before "STATE") with this:
+
+// ── Audio engine with smooth fades and duplicate prevention ──────────────────────────────
+let _musicNode = null;       // currently playing looping track
+let _musicKey  = null;       // key of the currently playing track
+let _fadeInterval = null;    // for smooth volume transitions
+let _targetVolume = 0;       // target volume during fade
+let _pendingMusicKey = null; // track waiting to play after fade-out
+let _isFadingOut = false;    // flag to prevent multiple fade-outs
+
+function playSound(key) {
+  const cfg = AUDIO[key];
+  if (!cfg || !cfg.src) return;
+  const a = new Audio(cfg.src);
+  a.volume = cfg.volume ?? 1.0;
+  a.play().catch(() => {});
+}
+
+// Stop any ongoing fade
+function stopFade() {
+  if (_fadeInterval) {
+    clearInterval(_fadeInterval);
+    _fadeInterval = null;
   }
 }
-function drawRain() {
-  rctx.clearRect(0,0,820,430);
-  drops.forEach(d => {
-    rctx.beginPath();
-    rctx.strokeStyle = `rgba(140,180,240,${d.opacity})`;
-    rctx.lineWidth = 0.6;
-    rctx.moveTo(d.x, d.y);
-    rctx.lineTo(d.x-1, d.y+d.len);
-    rctx.stroke();
-    d.y += d.speed;
-    if (d.y > 430) { d.y = -20; d.x = Math.random()*820; }
+
+// Fade from current volume to target volume over duration ms
+function fadeVolume(targetVol, duration, onComplete = null) {
+  if (!_musicNode) {
+    if (onComplete) onComplete();
+    return;
+  }
+  
+  stopFade();
+  
+  const startVol = _musicNode.volume;
+  const startTime = performance.now();
+  _targetVolume = targetVol;
+  
+  _fadeInterval = setInterval(() => {
+    if (!_musicNode) {
+      stopFade();
+      if (onComplete) onComplete();
+      return;
+    }
+    
+    const now = performance.now();
+    const elapsed = now - startTime;
+    let progress = Math.min(1, elapsed / duration);
+    
+    // Easing function for smoother fade (ease-in-out)
+    const easeProgress = progress < 0.5 
+      ? 2 * progress * progress 
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    
+    const newVol = startVol + (targetVol - startVol) * easeProgress;
+    _musicNode.volume = Math.max(0, Math.min(1, newVol));
+    
+    if (progress >= 1) {
+      stopFade();
+      if (targetVol <= 0.01 && _musicNode) {
+        // Fully faded out - stop the audio
+        _musicNode.pause();
+        _musicNode.currentTime = 0;
+        _musicNode = null;
+        _musicKey = null;
+        _isFadingOut = false;
+        if (onComplete) onComplete();
+      } else if (onComplete && targetVol > 0.01) {
+        onComplete();
+      }
+    }
+  }, 16); // ~60fps
+}
+
+// Play a named music track with optional fade transition
+// fadeDuration: how long to crossfade (ms) - default 800ms
+function playMusic(key, fadeDuration = 800) {
+  // If this track is already playing (and not fading out), do nothing
+  if (_musicKey === key && _musicNode && _musicNode.volume > 0.01 && !_isFadingOut) {
+    return; // Already playing this track - prevent stacking
+  }
+  
+  const cfg = AUDIO[key];
+  if (!cfg || !cfg.src) {
+    // No audio source - fade out current and stop
+    if (_musicNode && !_isFadingOut) {
+      _isFadingOut = true;
+      fadeVolume(0, fadeDuration, () => {
+        _musicNode = null;
+        _musicKey = null;
+        _isFadingOut = false;
+      });
+      _musicKey = null;
+    }
+    return;
+  }
+  
+  // If we're currently fading out, store this as pending
+  if (_isFadingOut) {
+    _pendingMusicKey = key;
+    return;
+  }
+  
+  // If we have existing music and it's a different track
+  if (_musicNode && _musicKey !== key) {
+    _isFadingOut = true;
+    const oldNode = _musicNode;
+    const targetKey = key;
+    const targetCfg = cfg;
+    
+    // Fade out the old track
+    fadeVolume(0, fadeDuration, () => {
+      // Stop and clean up old track
+      if (oldNode) {
+        oldNode.pause();
+        oldNode.currentTime = 0;
+      }
+      _musicNode = null;
+      _musicKey = null;
+      _isFadingOut = false;
+      
+      // Check if we got another request during fade-out
+      if (_pendingMusicKey === targetKey) {
+        _pendingMusicKey = null;
+      }
+      
+      // Start the new track
+      _musicNode = new Audio(targetCfg.src);
+      _musicNode.loop = true;
+      _musicNode.volume = 0;
+      _musicNode.play().catch(() => {});
+      _musicKey = targetKey;
+      
+      // Fade in the new track
+      fadeVolume(targetCfg.volume ?? 0.35, fadeDuration);
+    });
+  } 
+  // No existing music, just fade in
+  else if (!_musicNode) {
+    _musicNode = new Audio(cfg.src);
+    _musicNode.loop = true;
+    _musicNode.volume = 0;
+    _musicNode.play().catch(() => {});
+    _musicKey = key;
+    fadeVolume(cfg.volume ?? 0.35, fadeDuration);
+  }
+}
+
+// Legacy alias used by startGame / replay — maps to music_searching
+function startMusic() { 
+  playMusic('music_searching', 800); 
+}
+
+function stopMusic(fadeDuration = 600) {
+  if (!_musicNode || _isFadingOut) return;
+  _isFadingOut = true;
+  fadeVolume(0, fadeDuration, () => {
+    if (_musicNode) {
+      _musicNode.pause();
+      _musicNode.currentTime = 0;
+      _musicNode = null;
+    }
+    _musicKey = null;
+    _isFadingOut = false;
   });
-  requestAnimationFrame(drawRain);
 }
-initRain(); drawRain();
+// ════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════
+let health = 100;
+let gameFlags = {};
+let currentNode = null;
+let typing = false;
+let typeTimer = null;
+let waitingForInput = false;
+let pendingCallback = null;
+let shieldChoice = false; // if player chose to shield Aki, start with less HP
 
-// ── State ─────────────────────────────────────────────────────
-let health=100, gameFlags={}, currentNode=null;
-let typing=false, typeTimer=null, waitingForInput=false;
-let qteActive=false, qteTimeoutId=null, mashValue=0, mashDecayId=null;
-let pendingCallback=null;
-
-// ── Story ─────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  STORY DATA — UPDATED TO MATCH YOUR SCRIPT
+// ════════════════════════════════════════════════════════════
 const story = {
+
   start: {
-    bg:'street', portrait:null, speaker:null,
-    text:"NEON DISTRICT. 02:47. Rain hasn't stopped in six days.\n\nYou are KIRA VALE — augmented investigator, no badge, no corp affiliation. Someone put a hit out on you tonight. You don't know who. Yet.",
-    next:'n1'
+    bg: 'alley', portrait: null, speaker: null,
+    text: `You are Kazki.\nAn unfortunate soul who once used to live a normal life in the Nest, and now?\n\nNow you're just another piece of scum in the backstreets despite your very young age.`,
+    next: 's1'
   },
-  n1: {
-    bg:'street', portrait:'kira', speaker:'KIRA VALE',
-    text:"My neural feed pinged a contact thirty minutes ago. Ryker — a fixer I trust about as far as I can throw a cargo drone. But right now, he's all I've got.",
-    next:'n2'
+  s1: {
+    bg: 'alley', portrait: null,
+    text: `Your dad was the only parent you had.\n\nHe left one night to try to provide for you, and well...\n\nHe didn't come back.`,
+    next: 's2'
   },
-  n2: {
-    bg:'street', portrait:null, speaker:'COMMS — RYKER',
-    text:"You alive, Vale? Three of Yashida's street-sec just cleared the block heading your way. They're not looking to chat.",
-    next:'n3'
+  s2: {
+    bg: 'alley', portrait: null,
+    text: `It was getting too late. That was unusual for him.\n\nDespite his wishes, you decide to go out to look for him.`,
+    next: 's3'
   },
-  n3: {
-    bg:'street', portrait:'kira', speaker:'KIRA VALE',
-    text:"I spot them rounding the corner under the Datasync sign. Augmented muscle — subdermal plating, reflex mods. One of them has already clocked me.",
-    next:'choice1'
+  s3: {
+    bg: 'alley', portrait: null, 
+    text: `You didn't even have to walk far in those rank alleys to find his body either.`,
+    next: 's3b'
   },
-  choice1: {
-    bg:'street', portrait:'kira', speaker:null,
-    text:"The lead sec-thug breaks into a sprint. You have a second to react.",
-    choices:[
-      { text:"Sprint for the alley — lose them in the dark.", next:'n4_run' },
-      { text:"Hold your ground. Show them your augment.",     next:'n4_stand' }
+  s3b: {
+    bg: 'someimage', portrait: null, 
+    text: `You find him, but he's not moving.\n\nWhy isn't dad moving? Is he sleeping?-`,
+    next: 's3c'
+  },
+  s3c: {
+    bg: 'someimage', portrait: null, 
+    text: `No, you know that's not why. You can see the dark liquid pooling, seeping from his hair, but your brain refuses to process it anyway.`,
+    next: 's3d'
+  },
+  s3d: {
+    bg: 'someimage', portrait: null, 
+    text: `Maybe, just maybe, he'll respond to your voice? Tell you he was kidding and wanted to scare you, toughen you up a little, with that rasp he has.`,
+    next: 's3e'
+  },
+  s3e: {
+    bg: 'someimage', portrait: null, tremble: true, speaker: 'Kazki',
+    text: `"... Dad?"`,
+    next: 's3f'
+  },
+  s3f: {
+    bg: 'someimage', portrait: null, 
+    text: `Your voice comes out hoarse and shaky, nearly a whisper. You can't even hear it over the sound of your heartbeat thudding in your ears.`,
+    next: 's3g'
+  },
+  s3g: {
+    bg: 'someimage', portrait: null, 
+    text: `With unstable legs, you wobble closer to him. You wish you hadn't. It only confirmed the worst.`,
+    next: 's4'
+  },
+  s4: {
+    bg: 'kazki-cry', portrait: null, 
+    text: `...\n\nYou fall to your knees.`,
+    next: 's4b'
+  },
+  s4b: {
+    bg: 'kazki-cry', portrait: null, tremble: true, speaker: 'Kazki',
+    text: `"Dad, Dad? Please..."`,
+    next: 's4c'
+  },
+  s4c: {
+    bg: 'kazki-cry', portrait: null, 
+    text: `You reach out despite the dark liquid you refuse to acknowledge. It's tacky and thick already, coating your fingers. You grab hold of his coat, shaking him whilst ignoring the devastating chill of it.`,
+    next: 's4d'
+  },
+  s4d: {
+    bg: 'kazki-cry', portrait: null, tremble: true, speaker: 'Kazki',
+    text: `"Please... Please. I know I'm not supposed to be out late b-but I got so worried and\u2014 I'll be good next time, I promise. Just please get up Dad."`,
+    next: 's4e'
+  },
+  s4e: {
+    bg: 'kazki-cry', portrait: null, 
+    text: `Your words don't even make sense. It devolves into an incoherent babble, prayers to a world that seemed to be deaf.`,
+    next: 's4f'
+  },
+  s4f: {
+    bg: 'kazki-cry', portrait: null, 
+    text: `Your cheeks are hot with tears that flow freely. All you can think of is the last moments you shared with him, and that's all you have now. No more.`,
+    next: 's6'
+  },
+  s6: {
+    bg: 'kazki-cry', portrait: null, 
+    text: `You didn't have much to begin with, so why take him too?\nWhat's next?\n\nAkizet also?`,
+    next: 's7'
+  },
+  s7: {
+    bg: 'someimage', portrait: null, 
+    text: `You freeze.\n\nThe thought both terrifies you and fills you with an even deeper sense of sadness.`,
+    next: 's8'
+  },
+  s8: {
+    bg: 'kazki-resolute', portrait: null, 
+    text: `You swallow the lump in your throat.\n\nNo. You won't let that happen. It can't.`,
+    next: 's9'
+  },
+  s9: {
+    bg: 'alley', portrait: null, 
+    text: `With shaky hands, you take his coat.\n\nIt's too big for you for now, but maybe someday you'll grow into it.\n\nIt's the one thing that'll be a reminder.\n\nAs for him... You can't carry him. You know that.`,
+    next: 's10'
+  },
+  s10: {
+    bg: 'alley', portrait: null,
+    text: `But... Sweepers— No, you shove that thought away so hard it makes you dizzy. Just get the coat.`,
+    next: 's11'
+  },
+  s11: {
+    bg: 'alley', portrait: null, 
+    text: `You put it around your shoulders. It's heavy, comforting. Like him embracing you once more.\n\nIt gives you enough strength to shuffle back.`,
+    next: 's12'
+  },
+  s12: {
+    bg: 'someimage', portrait: null,
+    text: `Years pass, and well...\n\nYou are absolutely not that little girl with stars in her eyes anymore.\n\nYou're older and colder now. The backstreets had a way of doing that to people.`,
+    next: 's13'
+  },
+  s13: {
+    bg: 'someimage', portrait: null,
+    text: `You've killed at this point. Beaten rats to bloody pulps with your bare hands. It never fazed you either.\n\nWhy would it?`,
+    next: 's14'
+  },
+  s14: {
+    bg: 'someimage', portrait: null,
+    text: `This was retribution. What this world has taken from you, and a way to survive — it's only fair you take back from it too, right?\n\nIt was the only thing that made sense. The world took, so you took back. That's how it worked down here. That was just sense.`,
+    next: 's14b'
+  },
+  s14b: {
+    bg: 'someimage', portrait: null,
+    text: `Though, you weren't all the hard edges and roughness that you tried to be. You had one last weak spot, which was Akizet.`,
+    next: 's14c'
+  },
+  s14c: {
+    bg: 'someimage', portrait: null,
+    text: `After the death of your father, she was the only thing left of that warm and bright childhood you used to have. It was only natural you clung to it.`,
+    next: 's14d'
+  },
+  s14d: {
+    bg: 'someimage', portrait: null,
+    text: `You made sure to see her as often as you could, often taking her out to nowhere specific, just to get her some fresh air.`,
+    next: 's14e'
+  },
+  s14e: {
+    bg: 'someimage', portrait: null,
+    text: `You snicker. You almost forgot how withdrawn Akizet used to be back then, always stuck at home. It sort of pained you to watch that.`,
+    next: 's14f'
+  },
+  s14f: {
+    bg: 'someimage', portrait: null,
+    text: `So you tried to get her out more and it's seemed to work. Maybe not all the way, but the first time she reached out to ask to just walk around had surprised you.`,
+    next: 's14g'
+  },
+  s14g: {
+    bg: 'someimage', portrait: null,
+    text: `You were proud of that. That she's come so far. You'd never tell her that probably as it'd embarrass her, but you had other ways to show it.`,
+    next: 's14h'
+  },
+  s14h: {
+    bg: 'someimage', portrait: null,
+    text: `Like poptarts.`,
+    next: 'stalk_intro'
+  },
+
+  // ── STALKING SEQUENCE ─────────────────────────────────────
+  stalk_intro: {
+    bg: 'alley', portrait: 'kazki-1',
+    text: `Speaking of which.\n\nThree of the syndicate's boys have been circling this stretch all morning. They're carrying. You're not.\n\nBut they're also slow, and stupid, and loud. And you need their Ahn for the snack you promised Akizet.`,
+    next: 'stalk_intro2'
+  },
+  stalk_intro2: {
+    bg: 'alley', portrait: 'kazki-2', speaker: 'Kazki',
+    text: `"Easy."`,
+    next: 'stalk_intro3'
+  },
+  stalk_intro3: {
+    bg: 'kazki-wait', portrait: null,
+    text: `You roll your shoulders.\n\nYou've done this a hundred times. There's a particular rhythm to it — the way you flatten yourself against the wall, the way you read the length of a man's stride before he even knows you're there.\n\nYour father taught you how to walk quietly. He never meant for you to use it like this.`,
+    next: 'stalk_intro4'
+  },
+  stalk_intro4: {
+    bg: 'alley', portrait: null,
+    text: `You shove the thought down.\n\nThe first grunt rounds the corner. Alone. Perfect.\n\nWait for the right moment, then move.`,
+    next: 'stalk_1_start'
+  },
+  stalk_1_start: {
+    bg: 'alley', portrait: null,
+    text: ``,
+    next: 'stalk_1_start'  // immediately hijacked by goTo override
+  },
+
+  stalk_t1_success: {
+    bg: 'alley', portrait: 'kazki-1', speaker: null,
+    text: `Clean. He crumples without a sound and you're already moving, hands rifling through his jacket with practiced efficiency.\n\nA bit of Ahn. Not much, but something.\n\nYou feel nothing. That used to unsettle you — the nothing. Now it just feels like sense.`,
+    next: 'stalk_t1_b'
+  },
+  stalk_t1_b: {
+    bg: 'alley', portrait: 'kazki-7',
+    text: `You remember crying the first time you stole something. Not even from a person — a market stall. A single piece of bread.\n\nYou ate it in an alley and wept so hard you nearly choked on it.\n\nYou are not that person anymore. You don't know whether to be relieved or grieved by that.`,
+    next: 'stalk_t1_c'
+  },
+  stalk_t1_c: {
+    bg: 'alley', portrait: 'kazki-1',
+    text: `Second grunt's on the far end of the block.\n\nHe's bigger. Meaner looking. The kind that joined the syndicate so he'd have permission to be cruel.\n\nYou've known men like him your whole life. They don't scare you.`,
+    next: 'stalk_2_start'
+  },
+  stalk_t1_fail: {
+    bg: 'alley', portrait: 'kazki-8', speaker: null,
+    text: `He spins around just before you close the gap. You freeze against the wall — barely.\n\nYour heart slams in your ribcage. That familiar old animal terror. You hate that it still comes. You hate that you can't just turn it off.\n\nAfter a moment, he moves on.\n\nTry again.`,
+    damage: 10,
+    next: 'stalk_1_start'
+  },
+
+  stalk_2_start: {
+    bg: 'alley', portrait: null,
+    text: ``,
+    next: 'stalk_2_start'
+  },
+
+  stalk_t2_success: {
+    bg: 'alley', portrait: 'kazki-1', speaker: null,
+    text: `You catch him mid-yawn. His reaction time is pathetic. Yours is not.\n\nYou're on him before he even registers the shadow at his back, and down again just as fast.\n\nThe coins in his pocket are heavier than the first grunt's. Better.`,
+    next: 'stalk_t2_b'
+  },
+  stalk_t2_b: {
+    bg: 'alley', portrait: 'kazki-7',
+    text: `You pause for just a second, crouched over him.\n\nThere's a smear of dried blood on his knuckles that isn't his.\n\nYou wonder whose it is. You wonder if they're still alive. You find, to your dim surprise, that the wondering doesn't go away as fast as it used to.\n\nMaybe Akizet is rubbing off on you. That woman and her conscience.`,
+    next: 'stalk_t2_c'
+  },
+  stalk_t2_c: {
+    bg: 'alley', portrait: 'kazki-1', speaker: 'Kazki',
+    text: `"One more."`,
+    next: 'stalk_t2_d'
+  },
+  stalk_t2_d: {
+    bg: 'alley', portrait: 'kazki-1',
+    text: `Third grunt is the nervous type. He keeps checking over his shoulder, shifting his weight.\n\nGood instincts, bad execution. He'll never look far enough behind him.\n\nThey never do.`,
+    next: 'stalk_3_start'
+  },
+  stalk_t2_fail: {
+    bg: 'alley', portrait: 'kazki-8', speaker: null,
+    text: `He pivots faster than you expected. You duck into a doorway, pressing your back flat against the rotten wood.\n\nHe's scanning the alley. Paranoid type. Of course.\n\nYou wait him out. Patience has always been easier than people think — when you've spent enough nights wondering if tomorrow comes, you learn to simply exist in the stillness.`,
+    damage: 10,
+    next: 'stalk_2_start'
+  },
+
+  stalk_3_start: {
+    bg: 'alley', portrait: null,
+    text: ``,
+    next: 'stalk_3_start'
+  },
+
+  stalk_t3_success: {
+    bg: 'alley', portrait: 'kazki-1', speaker: null,
+    text: `The third one goes down with a quiet grunt. You're almost gentle about it — efficient enough that he won't wake up too sore.\n\nThat, you think, is the most consideration you've shown anyone all week.\n\nYou count the total take. Not a fortune. But enough for Akizet's snack, and a little left over.`,
+    next: 'stalk_t3_b'
+  },
+  stalk_t3_b: {
+    bg: 'alley', portrait: 'kazki-7',
+    text: `You straighten up. Wipe your hands on your coat — your father's coat.\n\nSomewhere in you, there is still a girl who grew up in a Nest with walls, and school corridors, and the scent of something cooking in another room.\n\nShe feels very far away right now. But she hasn't gone entirely.\n\nYou aren't sure what to do with that.`,
+    next: 'stalk_t3_c'
+  },
+  stalk_t3_c: {
+    bg: 'alley', portrait: 'kazki-7', speaker: 'Kazki',
+    text: `"Good enough."`,
+    next: 's15ba'
+  },
+  stalk_t3_fail: {
+    bg: 'alley', portrait: 'kazki-8', speaker: null,
+    text: `He spooks at the last second and you clip the wall scrambling back. Your shoulder takes it hard.\n\nYou bite down on a hiss.\n\nPain is information. That's what you tell yourself when it comes. It means you're still here. Still moving. Still necessary.\n\nYou reset. One more time.`,
+    damage: 10,
+    next: 'stalk_3_start'
+  },
+
+  // ── POST-STALK WALK // MEMORY MINIGAME BRIDGE ─────────────
+  s15ba: {
+    bg: 'main-street', portrait: 'kazki-3',
+    text: `You note internally that you've been weirdly reflective today. It's alright, it's bound to happen to someone like you sometimes, huh? Nothing's perfect.\n\nBest not to dote on it.`,
+    next: 's15bb'
+  },
+  s15bb: {
+    bg: 'main-street', portrait: 'kazki-3',
+    text: `But you do, your fingers idly fidgeting with his— your coat cuff.`,
+    next: 's15bc'
+  },
+  s15bc: {
+    bg: 'main-street', portrait: 'kazki-7',
+    text: `Your dad used to do the same whenever he was nervous too. Hah,did he pass on that trait to you too?\n\nYou swallow dryly, grief already placing that weird pang in your chest. You'd better stop, this is moving into dangerous territory.`,
+    next: 's15bd'
+  },
+  s15bd: {
+    bg: 'main-street', portrait: 'kazki-8', speaker: 'Kazki', tremble: true,
+    text: `"Think of other things, Kaz..."`,
+    next: 's15be'
+  },
+  s15be: {
+    bg: 'main-street', portrait: 'kazki-8', 
+    text: `You mutter to yourself as if that would help, but as you flip through what you consider your more tame, you still can't shake off the feeling.`,
+    next: 's15bf'
+  },
+  s15bf: {
+    bg: 'main-street', portrait: null, 
+    text: `You try to take a step forward, it's more of a stagger. Your breath comes out as a wheeze.`,
+    next: 's15b2'
+  },
+  s15b2: {
+    bg: 'kazki-tweak', portrait: null, 
+    text: `You clutch at your mid-section, suddenly needing something solid to grasp.`,
+    next: 's15b3'
+  },
+  s15b3: {
+    bg: 'kazki-tweak', portrait: null, speaker: 'Kazki', tremble: true,
+    text: `"No. C'mon Kazki, don't do this."`,
+    next: 's15b4'
+  },
+  s15b4: {
+    bg: 'kazki-tweak', portrait: null,
+    text: `You grunt out, shutting your eyes tightly.\n\nTears that you refuse to let escape burn behind your eyelids.`,
+    next: 's15c'
+  },
+  s15c: {
+    bg: 'someimage', portrait: null,
+    text: `It's the same sensation every time. Your body remembers things your mind tells it to forget.\n\nThe coat on your shoulders is heavier than it has any right to be.`,
+    next: 'memory_start'
+  },
+  // memory_start is intercepted by goTo — fires memory minigame → then routes to s16
+
+  s16: {
+    bg: 'main-street', portrait: 'kazki-8',
+    text: `Reality slowly phases back into your vision. You don't even remember leaning on a building for support.`,
+    next: 's16b'
+  },
+  s16b: {
+    bg: 'main-street', portrait: 'kazki-7',
+    text: `You clear your throat, drawing in a breath to fill your lungs and regain your composure.`,
+    next: 's16c'
+  },
+  s16c: {
+    bg: 'main-street', portrait: 'kazki-7',
+    text: `It takes a few steps forward for you to fully fall back into your usual easy gait.`,
+    next: 's16d'
+  },
+  s16d: {
+    bg: 'main-street', portrait: 'kazki-7',
+    text: `You promised her that you two would meet up at the store today and you'd buy her favorite snack.\n\nGet moving. Don't make her wait with your nonsense.`,
+    next: 's16e'
+  },
+  s16e: {
+    bg: 'main-street', portrait: 'kazki-3',
+    text: `You pass by a window and notice your reflection.\n\nNaturally, you smooth out your hair, threading fingers through your bangs to tuck behind your ears. You put on a smile.\n\nGood enough. You do this pretty well, don'tcha?`,
+    next: 's17'
+  },
+  s17: {
+    bg: 'store', portrait: 'aki-1',
+    text: `You walk to the store. It's not long before you see a slouched, shy figure.`,
+    next: 's18'
+  },
+  s18: {
+    bg: 'store', portrait: ['kazki-5', 'aki-1'], speaker: 'Kazki',
+    text: `"Aki!"`,
+    next: 's19'
+  },
+  s19: {
+    bg: 'store', portrait: ['kazki-1', 'aki-1'],
+    text: `The girl immediately perks her head up to look at you, almost surprised she's heard her name. Her posture almost immediately relaxes, a sheepish smile playing across her features.`,
+    next: 's20'
+  },
+  s20: {
+    bg: 'store', portrait: ['kazki-5', 'aki-1'], speaker: 'Kazki',
+    text: `"Hey! What'cha looking so scared for? Today's a good day, eh? Sweet treat's on me!"`,
+    next: 's21'
+  },
+  s21: {
+    bg: 'store', portrait: ['kazki-1', 'aki-1'],
+    text: `You say happily, eyes crinkling slightly at the corners with sincerity.`,
+    next: 's22'
+  },
+  s22: {
+    bg: 'store', portrait: ['kazki-1', 'aki-4'], speaker: null,
+    text: `Aki smiles a little wider, before nodding slightly. For a moment, her gaze flicks to your raw knuckles, then back up at your eyes.\n\nIt's an unspoken rule between you two. A small silence passes before you gesture towards the store's door.`,
+    next: 's23'
+  },
+  s23: {
+    bg: 'store', portrait: ['kazki-1', 'aki-4'],
+    text: `Akizet is broken out of her daze by it and nods her head quickly again, before stepping inside. You follow.`,
+    next: 's23b'
+  },
+  s23b: {
+    bg: 'inside-store', portrait: ['kazki-5', 'aki-4'], speaker: 'Kazki',
+    text: `"So, what flavor are we feeling today, Aki?"`,
+    next: 's23c'
+  },
+  s23c: {
+    bg: 'inside-store', portrait: ['kazki-1', 'aki-2'], speaker: 'Akizet',
+    text: `"Aw, c'mon Kaz! I get the same thing everytime..." She murmurs playfully, looking at the selection of poptarts on the shelves. She plucks out her usual favorite.`,
+    next: 's23d'
+  },
+  s23d: {
+    bg: 'inside-store', portrait: ['kazki-1', 'aki-4'],
+    text: `Before, she wouldn't really banter with you like that. It makes you smile.`,
+    next: 's23e'
+  },
+  s23e: {
+    bg: 'inside-store', portrait: ['kazki-5', 'aki-4'], speaker: 'Kazki',
+    text: `"Well I don't know! Maybe you might want something different!" You retort back, a genuine, breathy laugh leaving you.`,
+    next: 's23f'
+  },
+  s23f: {
+    bg: 'inside-store', portrait: ['kazki-1', 'aki-4'],
+    text: `You decide to treat yourself too, grabbing a packet of those chocolate chip cookies you like. It'd make Akizet feel guilty if you only got something for her.\n\nYou go to the register and pay with money that isn't really yours.`,
+    next: 's24'
+  },
+  s24: {
+    bg: 'store', portrait: ['kazki-1', 'aki-4'],
+    text: `Moments pass and you two leave. There's now a happy Akizet taking small, eager bites out of the poptart you've got for her.`,
+    next: 's25'
+  },
+  s25: {
+    bg: 'store', portrait: ['kazki-5', 'aki-4'], speaker: 'Kazki',
+    text: `"How's it, Aki?"`,
+    next: 's26'
+  },
+  s26: {
+    bg: 'store', portrait: ['kazki-1', 'aki-2'], speaker: 'Akizet',
+    text: `"Good! I've really been craving these. You know me so well, Kaz. Heh heh."`,
+    next: 's27'
+  },
+  s27: {
+    bg: 'store', portrait: ['kazki-1', 'aki-4'],
+    text: `You smile again. It felt nice to do things for her. You'd pour everything you had into her if it meant that she was alright.\n\nThe world wouldn't take your only friend away from you too. It wouldn't harm her — not if you had something to do about it.`,
+    next: 's28'
+  },
+  s28: {
+    bg: 'store', portrait: ['kazki-1', 'aki-4'],
+    text: `Eventually, the excitement dies down to you two simply conversing about mundane things. The usual, disgustingly normal that you've come to enjoy greatly.`,
+    next: 's29'
+  },
+  s29: {
+    bg: 'store', portrait: ['kazki-1', 'aki-5'],
+    text: `That is until, you hear a man's voice behind you.`,
+    next: 's30'
+  },
+  s30: {
+    bg: 'store', portrait: ['kazki-3', 'aki-5', 'unk-1'], speaker: '???',
+    text: `"So, you're the one."`,
+    next: 's31'
+  },
+  s31: {
+    bg: 'store', portrait: ['kazki-3', 'aki-5', 'unk-1'],
+    text: `You and Aki both turn your heads to see a rather rough looking man. He holds a metal bat in his hands. He stands with a confidence in his stance — he's definitely stronger than the syndicate grunts you'd normally bully. His shoulders broader and his hands more calloused. He's fought a lot before.\n\nAki's eyes widen. You smirk a little. Internally, you are a little uneasy.`,
+    next: 's32'
+  },
+  s32: {
+    bg: 'store', portrait: ['kazki-4', 'aki-5', 'unk-1'], speaker: 'Kazki',
+    text: `"Ehhh? Lil' ole' me? Robbing someone? Listen, I'm flattered you think I'd care enough to do something like that, but we're just two girls buying snacks."`,
+    next: 's32b'
+  },
+  s32b: {
+    bg: 'store', portrait: ['kazki-3', 'aki-5', 'unk-1'],
+    text: `You give him a nonchalant shrug.`,
+    next: 's33'
+  },
+  s33: {
+    bg: 'store', portrait: ['kazki-3', 'aki-5', 'unk-1'], speaker: '???',
+    text: `"You shouldn't play coy with me, woman. You've been robbing my boys!"`,
+    next: 's33b'
+  },
+  s33b: {
+    bg: 'store', portrait: ['kazki-3', 'aki-5', 'unk-1'],
+    text: `How could he possibly know? You've been at this for a while now and nobody's caught you before.\n\n... Unless one of the guys woke up and saw a glimpse of your pink hair. I mean, you do stick out.`,
+    next: 's33c'
+  },
+  s33c: {
+    bg: 'store', portrait: ['kazki-3', 'aki-5', 'unk-1'],
+    text: `Ah, shit. Best to play dumb and leave. Akizet's here and that's too risky for you to try to fight.`,
+    next: 's34'
+  },
+  s34: {
+    bg: 'store', portrait: ['kazki-4', 'aki-5', 'unk-1'], speaker: 'Kazki',
+    text: `"Mmm... Ah, that's rough then, huh, big guy? These backstreets, they're vast, you know?~ Plenty of pink haired women to investigate. You've got the wrong gal."`,
+    next: 's34b'
+  },
+  s34b: {
+    bg: 'store', portrait: ['kazki-4', 'aki-5', 'unk-1'], speaker: 'Kazki',
+    text: `"Well Aki, we should get going, good luck with your search and all that jazz."`,
+    next: 's35'
+  },
+  s35: {
+    bg: 'store', portrait: ['kazki-3', 'aki-5', 'unk-2'],
+    text: `You try to leave, but the man quickly intercepts, raising his bat to presumably strike you.\n\nAkizet quickly steps between you two.`,
+    next: 's36'
+  },
+  s36: {
+    bg: 'store', portrait: ['kazki-6', 'aki-3', 'unk-3'], speaker: 'Akizet',
+    text: `"Wait!... You... You don't need to do this!"`,
+    next: 's37'
+  },
+  s37: {
+    bg: 'store', portrait: ['kazki-6', 'aki-5', 'unk-3'], speaker: 'Kazki',
+    text: `"Aki—"`,
+    next: 's38'
+  },
+  s38: {
+    bg: 'store', portrait: ['kazki-6', 'aki-3', 'unk-3'], speaker: 'Akizet',
+    text: `"I'll take the punishment for her! Just— Just don't hurt her!"`,
+    next: 's39'
+  },
+  s39: {
+    bg: 'store', portrait: ['kazki-6', 'aki-3', 'unk-2'],
+    text: `You and the man stand there, stunned at Akizet's words. The man musters a wicked grin.\n\nHe raises the bat to swing at Akizet.\n\nYou need to do something. What do you do?`,
+    choices: [
+      { text: '▸  Tackle the man', next: 'c_tackle' },
+      { text: '▸  Shield Akizet',  next: 'c_shield'  }
     ]
   },
-  n4_run: {
-    bg:'street', portrait:'kira', speaker:'KIRA VALE',
-    text:"You bolt. The neon smears past you in streaks of hot pink and cold blue. The first one is fast — too fast. He's got speed mods.",
-    next:'qte1'
+
+  c_tackle: {
+    flag: { tackled: true },
+    bg: 'store', portrait: null,
+    text: `You lunge at him, full force.`,
+    next: 'battle_start'
   },
-  n4_stand: {
-    bg:'street', portrait:'kira', speaker:'KIRA VALE',
-    text:"You raise your cyber-arm, let the segmented plating splay open. Blue light pulses from the emitters.\n\nThey slow. Hesitate. Corp sec hates the unknown.\n\nThat's enough. You walk — calmly — into the bar.",
-    next:'n5'
+  c_shield: {
+    flag: { shielded: true },
+    damage: 25,
+    bg: 'store', portrait: null,
+    text: `You throw yourself between Aki and the bat.\n\nThe blow lands square on you.`,
+    next: 'battle_start'
   },
-  qte1: {
-    bg:'street', portrait:null, speaker:null,
-    text:"He grabs for your coat —",
-    qte:{ type:'press', key:'E', duration:2000, prompt:'BREAK FREE — PRESS [E]', successNode:'qte1_ok', failNode:'qte1_bad' }
+
+  battle_start: {
+    bg: 'store', portrait: null,
+    text: ``,
+    next: 'after_battle'
   },
-  qte1_ok: {
-    bg:'street', portrait:'kira', speaker:'KIRA VALE',
-    text:"You twist hard. His grip breaks. You crack an elbow into his visor — the glass spiderwebs — and you're gone, swallowed by the alley dark.",
-    next:'n5', flag:{ brokeFree:true }
+
+  after_battle: {
+    bg: 'kazki-ripthehomie', portrait: null,
+    speaker: '???',
+    text: `The man picks you up by your coat, lifting just enough so that you're face to face.`,
+    next: 'ab1b'
   },
-  qte1_bad: {
-    bg:'street', portrait:'kira', speaker:'KIRA VALE',
-    text:"He gets hold of you. You tear free but he takes a strip of your coat — and draws blood. You hit the alley wall and push hard. Vitals down.",
-    next:'n5', damage:28
+  ab1b: {
+    bg: 'kazki-ripthehomie', portrait: null, speaker: '???',
+    text: `"Ain't got that stupid look on your face now, huh?"`,
+    next: 'ab1c'
   },
-  n5: {
-    bg:'bar', portrait:null, speaker:null,
-    text:"Bar-7. The kind of place that doesn't ask questions and doesn't have cameras. Smells like synth-whisky and bad decisions.",
-    next:'n6'
+  ab1c: {
+    bg: 'kazki-ripthehomie', portrait: null,
+    text: `He releases one of his hands to grab your face instead. You raise your own hands to try and pry them off, but he easily swats them away as you have no more fight left in you.\n\nHe turns your face to inspect closer. You let out a hiss as his thumb presses into a fresh bruise.`,
+    next: 'ab1d'
   },
-  n6: {
-    bg:'bar', portrait:'ryker', speaker:'RYKER',
-    text:"You look worse than your feed. Sit down. I pulled the contract — anonymous, 80,000 cred, paid in ghost-coin. But the routing tag... it's Yashida Dynamics. Internal division.",
-    next:'n7'
+  ab1d: {
+    bg: 'kazki-ripthehomie', portrait: null, speaker: '???',
+    text: `"Damn, I really did a number on you, huh? No augments either. That pretty face will take a while to heal."`,
+    next: 'ab1e'
   },
-  n7: {
-    bg:'bar', portrait:'kira', speaker:'KIRA VALE',
-    text:"Yashida. Three years ago I pulled data from their black-site server farm for a client who turned out to be their own dissident faction. Apparently they have a long memory.",
-    next:'n8'
+  ab1e: {
+    bg: 'someimage', portrait: null,
+    text: `He finally releases you from his grasp. You crumple to the ground next to Akizet, who's equally as beaten up as you are.`,
+    next: 'ab1f'
   },
-  n8: {
-    bg:'bar', portrait:'ryker', speaker:'RYKER',
-    text:"There's a way out. Yashida's data vault — the one that holds the original contract — is in their sub-district tower. Wipe your file, you're a ghost. But you'll need their access cipher first.\n\nI can get it. But I need something in return.",
-    next:'choice2'
+  ab1f: {
+    bg: 'someimage', portrait: null, speaker: '???',
+    text: `"You're lucky your stupid friend stepped in to save you. Beating you two up was enough to satisfy me, so I won't kill you. Today."`,
+    next: 'ab2'
   },
-  choice2: {
-    bg:'bar', portrait:'kira', speaker:null,
-    text:"Ryker slides a datachip across the bar. His eyes don't leave yours.",
-    choices:[
-      { text:"Take the chip. Ask questions later.",          next:'qte2_setup' },
-      { text:"Push back. Demand to know what's on it.",     next:'n9_push'    }
-    ]
+  ab2: {
+    bg: 'someimage', portrait: null,
+    text: `He spits on you before walking off. Gross.`,
+    next: 'ab3'
   },
-  n9_push: {
-    bg:'bar', portrait:'ryker', speaker:'RYKER',
-    text:"He exhales. \"Client data. Encrypted. I don't even know what's on it — and that's the truth. All I know is the drop point is the Axiom tower lobby. 0400.\"\n\nYou believe him. Ryker lies about a lot. But not about the things that could get him killed.",
-    next:'qte2_setup'
+  ab3: {
+    bg: 'beat1', portrait: null, speaker: 'Kazki',
+    text: `"Hey. You alright?"`,
+    next: 'ab4'
   },
-  qte2_setup: {
-    bg:'bar', portrait:'kira', speaker:'KIRA VALE',
-    text:"You take the chip. The moment it slots into your palm-port, the bar's lights cut out. Someone triggered a blackout.",
-    next:'qte2'
+  ab4: {
+    bg: 'beat2', portrait: null, speaker: 'Akizet',
+    text: `"... Hah, everything hurts but... I'm okay."`,
+    next: 'ab5'
   },
-  qte2: {
-    bg:'bar', portrait:null, speaker:null,
-    text:"IN THE DARK — THEY'RE MOVING IN —",
-    qte:{ type:'mash', key:' ', duration:4000, prompt:'CHARGE YOUR AUGMENT — MASH [SPACE]!', threshold:70, successNode:'end_ghost', failNode:'end_burned' }
+  ab5: {
+    bg: 'beat3', portrait: null, speaker: 'Kazki',
+    text: `"Good. Don't ever do that again, please. We could've died."`,
+    next: 'ab6'
   },
-  end_ghost: {
-    isEnd:true,
-    title:'◈ ENDING: GHOST IN THE WIRE',
-    summary:"Your augment discharges — a pulse of blue light that drops every cybernetic in the room. You walk out through the stunned bodies. By 0500 your file is gone from Yashida's vault. You're a ghost. For now.",
-    color:'var(--cyan)'
+  ab6: {
+    bg: 'beat2', portrait: null, speaker: 'Akizet',
+    text: `"... It's okay. I think it was meant to happen anyway."`,
+    next: 'ab7'
   },
-  end_burned: {
-    isEnd:true,
-    title:'✖ ENDING: BURNED',
-    summary:"The augment sputters. They get to you before the charge builds. You wake up zip-tied in a Yashida sub-facility, the chip gone, Ryker's line dead. The city won this round.",
-    color:'var(--hot)'
+  ab7: {
+    bg: 'beat4', portrait: null,
+    text: `That earns a wet laugh out of you, before you cough, choked up a little with your own blood.`,
+    next: 'ab8'
+  },
+  ab8: {
+    bg: 'beat5', portrait: null, speaker: 'Kazki',
+    text: `"Kch... You're so weird, Aki."`,
+    next: 'ab9'
+  },
+  ab9: {
+    bg: 'beat6', portrait: null, speaker: 'Akizet',
+    text: `"Hah. Maybe."`,
+    next: 'ab10'
+  },
+  ab10: {
+    bg: 'beat4', portrait: null,
+    text: `"..."`,
+    next: 'ab11'
+  },
+  ab11: {
+    bg: 'beat7', portrait: null, speaker: 'Akizet',
+    text: `"Maybe this isn't the... best time to say it, but Kaz, there's something I wanted to talk to you about."`,
+    next: 'ab12'
+  },
+  ab12: {
+    bg: 'beat8', portrait: null, speaker: 'Kazki',
+    text: `"Yeah...?"`,
+    next: 'ab13'
+  },
+  ab13: {
+    bg: 'beat7', portrait: null, speaker: 'Akizet',
+    text: `"... I wanna make a change."`,
+    next: 'ab14'
+  },
+  ab14: {
+    bg: 'beat9', portrait: null, speaker: 'Kazki',
+    text: `"Hm.\n\nOkay."`,
+    next: 'ab15'
+  },
+  ab15: {
+    bg: 'someimage', portrait: null,
+    text: `You listen to Akizet discuss her dreams right then and there. While you two probably have a couple broken bones and are likely a few minutes from passing out from the loss of adrenaline.`,
+    next: 'ab16'
+  },
+  ab16: {
+    bg: 'someimage', portrait: null,
+    text: `While you do listen attentively, you accept her proposition with a quickness that even surprises her.`,
+    next: 'ab16b'
+  },
+  ab16b: {
+    bg: 'someimage', portrait: null, 
+    text: `You space out momentarily. A part of Akizet's words involuntarily sparks a memory of a mundane conversation with your father before you can suppress it. He told you to always follow your dreams. Generic dad-stuff.\n\nIt makes you wince.`,
+    next: 'ab17'
+  },
+  ab17: {
+    bg: 'someimage', portrait: null, tremble: true,
+    text: `...\n\nHow pathetic you are.`,
+    next: 'ab18'
+  },
+  ab18: {
+    bg: 'someimage', portrait: null, 
+    text: `You don't even have a true reason to join an office.\n\nYou're just agreeing because Akizet wants you there, and you want whatever she wants.`,
+    next: 'ab19'
+  },
+  ab19: {
+    bg: 'someimage', portrait: null, tremble: true,
+    text: `Hah.\n\nHahahaha.`,
+    next: 'ab20'
+  },
+  ab20: {
+    bg: 'someimage', portrait: null, tremble: true,
+    text: `How silly is that? A person without their own ambitions and dreams? Does even another person like that exist or is it just you? Are you just that cursed?`,
+    next: 'ab21'
+  },
+  ab21: {
+    bg: 'someimage', portrait: null, 
+    text: `Dad would get mad at you for that, wouldn't he?\n\nYou can almost hear him sighing. "That's not a dream, kid. That's just following someone else's."`,
+    next: 'ab22'
+  },
+  ab22: {
+    bg: 'someimage', portrait: null, 
+    text: `He would want you to chase something that's truly yours, even if it's stupid and—\n\nNo. Quit that. You came to terms with how it is long ago.`,
+    next: 'ab23'
+  },
+  ab23: {
+    bg: 'someimage', portrait: null,
+    text: `He's... not here anymore. You have no reason to dwell on these things.\n\nYou worry about what's here, and that's Akizet. And she wants you to join her office.\n\nSo that's what you'll do.`,
+    next: 'end_ch1'
+  },
+
+  end_ch1: {
+    isEnd: true,
+    title: '◈ End',
+    color: 'var(--accent)'
   }
 };
 
-// ── Engine ─────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  STALK MINIGAME
+// ════════════════════════════════════════════════════════════
+
+const STALK_TARGETS = [
+  {
+    id: 1,
+    flavor: 'He\'s distracted. Watch the rhythm of his footsteps.',
+    successNode: 'stalk_t1_success',
+    failNode:    'stalk_t1_fail',
+    speed: 1.4,   // px per frame
+    lookChance: 0.007,
+    lookDur: 1200,
+  },
+  {
+    id: 2,
+    flavor: 'Bigger. But bored. Boredom makes people sloppy.',
+    successNode: 'stalk_t2_success',
+    failNode:    'stalk_t2_fail',
+    speed: 1.1,
+    lookChance: 0.009,
+    lookDur: 1000,
+  },
+  {
+    id: 3,
+    flavor: 'Nervous one. He keeps looking. Time it carefully.',
+    successNode: 'stalk_t3_success',
+    failNode:    'stalk_t3_fail',
+    speed: 1.6,
+    lookChance: 0.016,
+    lookDur: 900,
+  },
+];
+
+const STALK = {
+  active:     false,
+  targetIdx:  0,
+  grunX:      0,
+  zoneX:      0,
+  dir:        1,    // 1 = right, -1 = left
+  looking:    false,
+  lookTimer:  null,
+  rafID:      null,
+  composure:  100,
+  strikeUsed: false,
+};
+
+const ARENA_W    = 560;
+const GRUNT_W    = 80;  // matches #stalk-grunt width in CSS
+const ZONE_W     = 70;
+
+function startStalkMinigame(targetIdx) {
+  STALK.active     = true;
+  STALK.targetIdx  = targetIdx;
+  STALK.composure  = Math.max(STALK.composure, 40); // carry composure between rounds, floor at 40
+  STALK.looking    = false;
+  STALK.strikeUsed = false;
+  STALK.dir        = 1;
+  STALK.grunX      = 20;
+  document.getElementById('stalk-grunt').style.transform = 'scaleX(1)'; // reset facing direction
+
+  // Randomise zone position (not too close to edges)
+  STALK.zoneX = 120 + Math.floor(Math.random() * (ARENA_W - ZONE_W - 240));
+
+  const cfg = STALK_TARGETS[targetIdx];
+
+  // ── Apply grunt walk animation (or fall back to CSS silhouette) ──
+  const spriteKey  = ['grunt1', 'grunt2', 'grunt3'][targetIdx];
+  const spriteCfg  = GRUNT_SPRITES[spriteKey];
+  const spriteEl   = document.getElementById('stalk-grunt-sprite');
+  const silEl      = document.querySelector('#stalk-grunt .grunt-fig');
+
+  const allFramesSet = spriteCfg && spriteCfg.f1 && spriteCfg.f2 && spriteCfg.f3 && spriteCfg.f4;
+
+  if (allFramesSet) {
+    // All 4 frames provided — inject them into a fresh @keyframes rule and apply
+    const animName     = `${spriteKey}-walk-live`;
+    const cycleDur     = (4 / spriteCfg.fps).toFixed(3) + 's';  // e.g. fps:6 → 0.667s per cycle
+
+    // Inject (or replace) the dynamic keyframes into the document
+    const styleId = 'grunt-walk-dynamic-style';
+    let styleTag  = document.getElementById(styleId);
+    if (!styleTag) {
+      styleTag = document.createElement('style');
+      styleTag.id = styleId;
+      document.head.appendChild(styleTag);
+    }
+    styleTag.textContent = `
+      @keyframes ${animName} {
+        0%   { background-image: url('${spriteCfg.f1}'); }
+        25%  { background-image: url('${spriteCfg.f2}'); }
+        50%  { background-image: url('${spriteCfg.f3}'); }
+        75%  { background-image: url('${spriteCfg.f4}'); }
+      }`;
+
+    // Pre-load all 4 images so there's no first-frame flicker
+    [spriteCfg.f1, spriteCfg.f2, spriteCfg.f3, spriteCfg.f4].forEach(src => {
+      const img = new Image(); img.src = src;
+    });
+
+    // Set first frame immediately, then start the animation
+    spriteEl.style.backgroundImage = `url('${spriteCfg.f1}')`;
+    spriteEl.style.animation = `${animName} ${cycleDur} steps(4) infinite`;
+    spriteEl.style.display   = 'block';
+    if (silEl) silEl.style.display = 'none';
+  } else {
+    // Missing frames — show CSS silhouette placeholder instead
+    spriteEl.style.backgroundImage = '';
+    spriteEl.style.animation       = 'none';
+    spriteEl.style.display         = 'none';
+    if (silEl) silEl.style.display = 'flex';
+  }
+
+  document.getElementById('stalk-overlay').classList.add('active');
+  document.getElementById('stalk-target-label').textContent = `TARGET  0${targetIdx + 1} / 03`;
+  document.getElementById('stalk-flavor').textContent = cfg.flavor;
+  document.getElementById('stalk-result').textContent = '';
+  document.getElementById('stalk-result').className = 'stalk-result';
+  document.getElementById('stalk-btn').disabled = false;
+  document.getElementById('stalk-alert').classList.remove('visible');
+  document.getElementById('stalk-flash').style.opacity = '0';
+
+  updateStalkComposure();
+  updateStalkZone();
+  moveGrunt();
+  scheduleStalkLook(cfg);
+}
+
+function moveGrunt() {
+  cancelAnimationFrame(STALK.rafID);
+  const cfg      = STALK_TARGETS[STALK.targetIdx];
+  const gruntEl  = document.getElementById('stalk-grunt');
+  function frame() {
+    if (!STALK.active) return;
+    STALK.grunX += STALK.dir * cfg.speed;
+    if (STALK.grunX > ARENA_W - GRUNT_W) {
+      STALK.grunX = ARENA_W - GRUNT_W;
+      STALK.dir = -1;
+      gruntEl.style.transform = 'scaleX(-1)';  // facing left
+    }
+    if (STALK.grunX < 0) {
+      STALK.grunX = 0;
+      STALK.dir = 1;
+      gruntEl.style.transform = 'scaleX(1)';   // facing right
+    }
+    gruntEl.style.left = STALK.grunX + 'px';
+    STALK.rafID = requestAnimationFrame(frame);
+  }
+  STALK.rafID = requestAnimationFrame(frame);
+}
+
+function scheduleStalkLook(cfg) {
+  if (!STALK.active) return;
+  if (Math.random() < cfg.lookChance && !STALK.looking) {
+    triggerStalkLook(cfg);
+  }
+  setTimeout(() => scheduleStalkLook(cfg), 60);
+}
+
+function triggerStalkLook(cfg) {
+  if (!STALK.active || STALK.looking) return;
+  STALK.looking = true;
+  document.getElementById('stalk-alert').classList.add('visible');
+  STALK.lookTimer = setTimeout(() => {
+    STALK.looking = false;
+    document.getElementById('stalk-alert').classList.remove('visible');
+  }, cfg.lookDur);
+}
+
+function updateStalkZone() {
+  document.getElementById('stalk-zone').style.left = STALK.zoneX + 'px';
+}
+
+function updateStalkComposure() {
+  const fill = document.getElementById('stalk-bar-fill');
+  fill.style.width = STALK.composure + '%';
+  if (STALK.composure > 60)       fill.style.background = 'linear-gradient(90deg,var(--accent3),var(--accent))';
+  else if (STALK.composure > 30)  fill.style.background = 'linear-gradient(90deg,var(--accent2),var(--accent3))';
+  else                             fill.style.background = 'linear-gradient(90deg,#6b0f0f,var(--danger))';
+}
+
+function stalkFlash(color) {
+  const f = document.getElementById('stalk-flash');
+  f.style.background = color; f.style.opacity = '.4';
+  setTimeout(() => { f.style.opacity = '0'; }, 200);
+}
+
+function stalkStrike() {
+  if (!STALK.active || STALK.strikeUsed) return;
+  STALK.strikeUsed = true;
+  document.getElementById('stalk-btn').disabled = true;
+
+  const cfg      = STALK_TARGETS[STALK.targetIdx];
+  const gruntMid = STALK.grunX + GRUNT_W / 2;
+  const inZone   = gruntMid >= STALK.zoneX && gruntMid <= STALK.zoneX + ZONE_W;
+  const looking  = STALK.looking;
+
+  const res = document.getElementById('stalk-result');
+
+  if (inZone && !looking) {
+    // SUCCESS
+    stalkFlash('rgba(200,128,58,.3)');
+    playSound('snd_strike');
+    res.textContent = 'Got him.';
+    res.className = 'stalk-result visible';
+  } else if (looking) {
+    // CAUGHT WHILE LOOKING — penalise
+    STALK.composure = Math.max(0, STALK.composure - 30);
+    updateStalkComposure();
+    health = Math.max(8, health - 12);
+    updateHealth();
+    stalkFlash('rgba(139,26,26,.5)');
+    res.textContent = 'He saw you. You scramble back.';
+    res.className = 'stalk-result fail visible';
+  } else {
+    // MISSED ZONE
+    STALK.composure = Math.max(0, STALK.composure - 15);
+    updateStalkComposure();
+    stalkFlash('rgba(139,58,26,.3)');
+    res.textContent = 'Too early. He heard something.';
+    res.className = 'stalk-result fail visible';
+  }
+
+  cancelAnimationFrame(STALK.rafID);
+  clearTimeout(STALK.lookTimer);
+
+  const successNode = cfg.successNode;
+  const failNode    = cfg.failNode;
+
+  setTimeout(() => {
+    STALK.active = false;
+    document.getElementById('stalk-overlay').classList.remove('active');
+    document.getElementById('stalk-alert').classList.remove('visible');
+    res.textContent = '';
+    res.className   = 'stalk-result';
+    if (inZone && !looking) goTo(successNode);
+    else                    goTo(failNode);
+  }, 900);
+}
+
+// ════════════════════════════════════════════════════════════
+//  MEMORY MINIGAME — "The Weight of It"
+//  A grief/suppression puzzle. Thoughts materialize on screen.
+//  The player clicks to suppress them one by one.
+//  Each has a brief "echo" — a line that surfaces when buried.
+//  When enough composure is built, a final thought appears that
+//  cannot be buried. Kazki accepts it and moves on.
+// ════════════════════════════════════════════════════════════
+
+const MEM_THOUGHTS = [
+  {
+    id: 'mt1', category: 'grief',
+    text: `He always came back, until that one night.`,
+    echo: `You shoud've gotten over yourself and searched sooner. Too timid.`,
+    pos: { top: '12%', left: '4%' }
+  },
+  {
+    id: 'mt2', category: 'rage',
+    text: `Someone put him down like an animal. They're still out there.`,
+    echo: `It doesn't matter. Knowing won't change anything.`,
+    pos: { top: '8%', left: '36%' }
+  },
+  {
+    id: 'mt3', category: 'tender',
+    text: `He used to hum this stupid song. Off-key. Always off-key. Drove you crazy.`,
+    echo: `You'd give anything to hear it again. Anything..`,
+    pos: { top: '14%', right: '4%' }
+  },
+  {
+    id: 'mt4', category: 'cold',
+    text: `Grief is a luxury. You can't afford it.`,
+    echo: `Keep telling yourself that.`,
+    pos: { top: '48%', left: '2%' }
+  },
+  {
+    id: 'mt5', category: 'grief',
+    text: `You bought his favorite tea once, tried to drink it. Cried at the taste, ended up letting it go to waste.`,
+    echo: `You've never told anyone about it.`,
+    pos: { top: '52%', left: '30%' }
+  },
+  {
+    id: 'mt6', category: 'tender',
+    text: `He told you to be good. To be kind. Even when it's hard.`,
+    echo: `Couldn't do that. But he'd still have loved you anyway.`,
+    pos: { top: '44%', right: '2%' }
+  },
+  {
+    id: 'mt7', category: 'rage',
+    text: `You were just a child. Children deserve to have their parents.`,
+    echo: `Too bad the world isn't fair.`,
+    pos: { top: '76%', left: '8%' }
+  },
+  {
+    id: 'mt8', category: 'cold',
+    text: `Akizet is the only thing left.`,
+    echo: `Then go. Don't make her wait.`,
+    pos: { top: '78%', right: '6%' }
+  },
+];
+
+// The one thought that cannot be buried — the honest core.
+const MEM_FINAL = `You still miss him every single day.\n\nYou think you always will.`;
+
+const MEM = {
+  active: false,
+  suppressed: 0,
+  total: MEM_THOUGHTS.length,
+  nextNode: null,
+  echoTimer: null,
+  done: false,
+  waitingForContinue: false
+};
+
+function startMemoryMinigame(nextNode) {
+  MEM.active    = true;
+  MEM.suppressed = 0;
+  MEM.done      = false;
+  MEM.waitingForContinue = false;
+  MEM.nextNode  = nextNode;
+
+  const overlay = document.getElementById('memory-overlay');
+  overlay.classList.add('active');
+
+  // Reset gauge, echo, final, hint
+  document.getElementById('mem-gauge-fill').style.width = '0%';
+  document.getElementById('mem-echo').textContent = '';
+  document.getElementById('mem-echo').classList.remove('visible');
+  document.getElementById('mem-final-thought').textContent = '';
+  document.getElementById('mem-final-thought').classList.remove('visible');
+  document.getElementById('mem-continue-hint').classList.remove('visible');
+
+  // Build thought cards
+  const field = document.getElementById('mem-thought-field');
+  field.innerHTML = '';
+  MEM_THOUGHTS.forEach(t => {
+    const div = document.createElement('div');
+    div.className = `mem-thought category-${t.category}`;
+    div.id = 'mthought-' + t.id;
+    div.textContent = t.text;
+    Object.assign(div.style, t.pos);
+    div.addEventListener('click', () => suppressThought(t, div));
+    field.appendChild(div);
+  });
+}
+
+// Yellow square particles — fired when a memory is suppressed
+function spawnMemoryParticles(el) {
+  const overlay = document.getElementById('memory-overlay');
+  const oRect   = overlay.getBoundingClientRect();
+  const eRect   = el.getBoundingClientRect();
+  const cx      = eRect.left - oRect.left + eRect.width  / 2;
+  const cy      = eRect.top  - oRect.top  + eRect.height / 2;
+  const count   = 14 + Math.floor(Math.random() * 10); // 14–23 particles
+
+  for (let i = 0; i < count; i++) {
+    const p    = document.createElement('div');
+    const size = 3 + Math.floor(Math.random() * 6);     // 3–8 px
+    // Scatter from inside the card area
+    const sx = cx + (Math.random() - .5) * eRect.width  * .85;
+    const sy = cy + (Math.random() - .5) * eRect.height * .85;
+    // Gradient from warm amber gold → pale yellow → near-white
+    const hue  = 42 + Math.floor(Math.random() * 12);   // 42–54 °
+    const sat  = 80 - Math.floor(Math.random() * 65);   // 15–80 %
+    const lit  = 68 + Math.floor(Math.random() * 28);   // 68–96 %
+    p.style.cssText =
+      `position:absolute;width:${size}px;height:${size}px;` +
+      `background:hsl(${hue},${sat}%,${lit}%);` +
+      `left:${sx}px;top:${sy}px;pointer-events:none;z-index:12;`;
+    overlay.appendChild(p);
+
+    const dx  = (Math.random() - .5) * 100;
+    const dy  = -(20 + Math.random() * 75);
+    const dur = 480 + Math.random() * 680;
+    p.animate(
+      [
+        { opacity: .95, transform: 'scale(1) rotate(0deg)' },
+        { opacity: 0,   transform: `translate(${dx}px,${dy}px) scale(.1) rotate(${Math.random()*60-30}deg)` }
+      ],
+      { duration: dur, easing: 'ease-out', fill: 'forwards' }
+    ).onfinish = () => p.remove();
+  }
+}
+
+function suppressThought(t, el) {
+  if (!MEM.active || MEM.done || el.classList.contains('suppressed')) return;
+  spawnMemoryParticles(el);
+  el.classList.add('suppressed');
+  MEM.suppressed++;
+  playSound('snd_memory');
+
+  // Show echo
+  const echoEl = document.getElementById('mem-echo');
+  clearTimeout(MEM.echoTimer);
+  echoEl.textContent = t.echo;
+  echoEl.classList.add('visible');
+  MEM.echoTimer = setTimeout(() => echoEl.classList.remove('visible'), 2800);
+
+  // Advance gauge
+  const pct = (MEM.suppressed / MEM.total) * 100;
+  document.getElementById('mem-gauge-fill').style.width = pct + '%';
+
+  // When all suppressed, show the final irremovable thought
+  if (MEM.suppressed >= MEM.total) {
+    MEM.done = true;
+    clearTimeout(MEM.echoTimer);
+    echoEl.classList.remove('visible');
+    setTimeout(() => {
+      const ft = document.getElementById('mem-final-thought');
+      ft.textContent = MEM_FINAL;
+      ft.classList.add('visible');
+      setTimeout(() => {
+        document.getElementById('mem-continue-hint').classList.add('visible');
+        MEM.waitingForContinue = true;
+      }, 2200);
+    }, 700);
+  }
+}
+
+function endMemoryMinigame() {
+  if (!MEM.active || !MEM.waitingForContinue) return;
+  MEM.active = false;
+  MEM.waitingForContinue = false;
+  const overlay = document.getElementById('memory-overlay');
+  overlay.style.transition = 'opacity .7s ease';
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.style.opacity = '';
+    overlay.style.transition = '';
+    goTo(MEM.nextNode);
+  }, 720);
+}
+
+// Click/space handler for memory minigame continuation
+document.getElementById('dialogue-panel').addEventListener('click', function() {
+  if (MEM.active && MEM.waitingForContinue) { endMemoryMinigame(); }
+});
+document.addEventListener('keydown', function(e) {
+  if (MEM.active && MEM.waitingForContinue && e.key === ' ') {
+    e.preventDefault(); endMemoryMinigame();
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+//  ENGINE
+// ════════════════════════════════════════════════════════════
 function startGame() {
-  document.getElementById('title-screen').style.display='none';
-  health=100; gameFlags={}; updateHealth(); goTo('start');
+  document.getElementById('title-screen').style.display = 'none';
+  health = 100; gameFlags = {}; STALK.active = false; STALK.composure = 100;
+  MEM.active = false; MEM.waitingForContinue = false; CLASH.active = false;
+  updateHealth(); startMusic(); goTo('start');
 }
 function replay() {
-  document.getElementById('end-screen').classList.remove('active'); startGame();
+  document.getElementById('end-screen').classList.remove('active');
+  shieldChoice = false; STALK.active = false; STALK.composure = 100;
+  MEM.active = false; MEM.waitingForContinue = false; CLASH.active = false;
+  stopMusic(); startGame();
 }
 
 function goTo(id) {
+  if (id === 'battle_start') {
+    // start the COIN CLASH battle system
+    startCoinClash();
+    return;
+  }
+
+  // Memory minigame intercept
+  if (id === 'memory_start') { startMemoryMinigame('s16'); return; }
+
+  // Stalk minigame intercepts
+  if (id === 'stalk_1_start') { startStalkMinigame(0); return; }
+  if (id === 'stalk_2_start') { startStalkMinigame(1); return; }
+  if (id === 'stalk_3_start') { startStalkMinigame(2); return; }
+
+  // ── Node-specific sound triggers ──────────────────────────
+  if (id === 's4')       playSound('snd_kneel');  // Kazki falls to her knees
+  if (id === 'c_shield') playSound('snd_shield'); // throws herself in front of Aki
+  if (id === 'c_tackle') playSound('snd_tackle'); // lunges at the man
+
+// ── Scene music switches (with smooth fades) ───────────────────────────────────
+// searching: prologue / alley searching for father (start → s11)
+const SEARCHING_NODES = new Set(['start','s1','s2','s3','s3b','s3c','s3d','s3e','s3f','s3g','s4','s4b','s4c','s4d','s4e','s4f','s6','s7','s8','s9','s10','s11']);
+
+// struggle: Kazki losing composure while walking to the store (s15b through s15c)
+const STRUGGLE_NODES = new Set(['s15ba', 's15bb', 's15bc', 's15bd', 's15be', 's15bf', 's15b2', 's15b3', 's15b4', 's15c']);
+
+// casual: store visit, post-stalk walking, Aki scenes (s14h through after_battle, but excluding struggle nodes)
+const CASUAL_NODES = new Set([
+  's14h', 's16', 's16b', 's16c', 's16d',
+  's17', 's18', 's19', 's20', 's21', 's22', 's23', 's23b', 's23c', 's23d', 's23e', 's23f',
+  's24', 's25', 's26', 's27', 's28', 's29'
+]);
+
+// aftermath: after the fight when the man drops Kazki and leaves (ab1e through ab3)
+const AFTERMATH_NODES = new Set([
+  'ab1f', 'ab2', 'ab3', 'ab4', 'ab5', 'ab6', 'ab7', 'ab8', 'ab9', 
+  'ab10', 'ab11', 'ab12', 'ab13', 'ab14', 'ab15', 'ab16', 'ab17', 'ab18', 
+  'ab19', 'ab20', 'ab21', 'ab22', 'end_ch1'
+]);
+
+// NODES WITH NO MUSIC (s12 through s14g)
+const NO_MUSIC_NODES = new Set([
+  's12', 's13', 's14', 's14b', 's14c', 's14d', 's14e', 's14f', 's14g',
+  'after_battle', 'ab1b', 'ab1c', 'ab1d', 'ab1e'  
+]);
+
+// Apply music based on current node
+if (SEARCHING_NODES.has(id)) {
+  playMusic('music_searching', 800);
+} else if (STRUGGLE_NODES.has(id)) {
+  playMusic('music_struggle', 600);
+} else if (AFTERMATH_NODES.has(id)) {
+  playMusic('music_aftermath', 700);  // Slower fade for more emotional impact
+} else if (NO_MUSIC_NODES.has(id)) {
+  stopMusic(2500);
+} else if (CASUAL_NODES.has(id)) {
+  playMusic('music_casual', 1000);
+}
+  // ── Vignette pulse — Kazki walking to the store, losing it ─
+  // Activates from s15b (starts losing composure) through s15c (memory gate)
+  // Deactivates at s16 (reality phases back)
+  const VIGNETTE_NODES = new Set([,'s15b2','s15b3','s15b4','s15c']);
+  const vigEl = document.getElementById('vignette-pulse');
+  if (vigEl) {
+    if (VIGNETTE_NODES.has(id)) {
+      vigEl.classList.add('active');
+    } else {
+      vigEl.classList.remove('active');
+      vigEl.style.opacity = '0';
+    }
+  }
+
   const node = story[id];
   if (!node) return;
   currentNode = id;
-  if (node.isEnd) { showEnd(node); return; }
-  if (node.damage) { health=Math.max(0,health-node.damage); updateHealth(); flashScreen(); }
+  if (node.isEnd) { stopMusic(); showEnd(node); return; }
+  if (node.damage) {
+    health = Math.max(0, health - node.damage);
+    updateHealth(); flashScreen();
+    shieldChoice = true;
+    // shake the game box
+    document.getElementById('game').classList.remove('shaking');
+    void document.getElementById('game').offsetWidth;
+    document.getElementById('game').classList.add('shaking');
+    setTimeout(()=>document.getElementById('game').classList.remove('shaking'), 600);
+  }
   if (node.flag) Object.assign(gameFlags, node.flag);
-  if (node.bg) setBackground(node.bg);
-  setPortrait(node.portrait||null);
-  setSpeaker(node.speaker||null);
+  if (node.bg)  setBackground(node.bg);
+  setPortrait(node.portrait || null);
+  setSpeaker(node.speaker !== undefined ? node.speaker : null);
   document.getElementById('choice-panel').classList.remove('active');
-  document.getElementById('choice-panel').innerHTML='';
-  if (node.qte)          showDialogue(node.text,()=>triggerQTE(node.qte));
-  else if (node.choices) showDialogue(node.text,()=>showChoices(node.choices));
-  else                   showDialogue(node.text,()=>waitForClick(node.next));
+  document.getElementById('choice-panel').innerHTML = '';
+
+  if (node.choices) showDialogue(node.text || '', () => showChoices(node.choices), node.tremble);
+  else              showDialogue(node.text || '', () => waitForClick(node.next), node.tremble);
 }
 
 function setBackground(name) {
-  document.querySelectorAll('.scene-bg').forEach(e=>e.classList.remove('active'));
-  const el = document.getElementById('bg-'+name);
-  if (el) el.classList.add('active');
-  const labels = { street:'ACT 01 // NEON DISTRICT', bar:'ACT 02 // BAR-7, UNDERGROUND' };
-  document.getElementById('hud-chapter').textContent = labels[name]||'';
+  document.querySelectorAll('.scene-bg').forEach(e => e.classList.remove('active'));
+  const el = document.getElementById('bg-' + name);
+  if (!el) return;
+  el.classList.add('active');
+
+  // Apply custom background image if one is set in BACKGROUNDS config
+  const bgCfg = BACKGROUNDS[name];
+  const fallback = el.querySelector('.bg-fallback');
+  if (bgCfg && bgCfg.src) {
+    // Inject or update a custom image layer behind the fallback CSS
+    let img = el.querySelector('.bg-custom-img');
+    if (!img) {
+      img = document.createElement('div');
+      img.className = 'bg-custom-img';
+      img.style.cssText = 'position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;';
+      el.insertBefore(img, el.firstChild);
+    }
+    img.style.backgroundImage = `url('${bgCfg.src}')`;
+    if (fallback) fallback.style.opacity = '0'; // hide CSS fallback
+  } else {
+    // No custom image — show the CSS fallback
+    const img = el.querySelector('.bg-custom-img');
+    if (img) img.style.backgroundImage = '';
+    if (fallback) fallback.style.opacity = '';
+  }
+
+  const labels = { alley: 'Prologue // The Backstreets', store: 'Chapter One // A Familiar Face' };
+  document.getElementById('hud-chapter').textContent = labels[name] || '';
 }
 
 function setPortrait(name) {
-  document.querySelectorAll('.portrait').forEach(p=>p.classList.remove('active'));
-  if (name) { const el=document.getElementById('portrait-'+name); if(el) el.classList.add('active'); }
+  document.querySelectorAll('.portrait').forEach(p => p.classList.remove('active'));
+  if (!name) return;
+  const names = Array.isArray(name) ? name : [name];
+  names.forEach(n => {
+    const el = document.getElementById('portrait-' + n);
+    if (!el) return;
+    el.classList.add('active');
+
+    const cfg = SPRITES[n];
+    if (cfg && cfg.src) {
+      // Real image — inject once (or update if src changed)
+      if (el.dataset.loadedSrc !== cfg.src) {
+        el.dataset.loadedSrc = cfg.src;
+        el.innerHTML = `<img src="${cfg.src}" alt="${cfg.label}"
+          style="position:absolute;inset:0;width:100%;height:100%;
+                 object-fit:contain;object-position:bottom center;">`;
+      }
+    } else {
+      // Silhouette fallback — only rebuild if not already showing one
+      if (!el.querySelector('.sprite-placeholder')) {
+        const charClass = n.startsWith('kazki') ? 'kazki' : n.startsWith('aki') ? 'aki' : 'unk';
+        el.innerHTML = `
+          <div class="sprite-placeholder">
+            <div class="sil-body sil-${charClass}">
+              <div class="sil-head"></div>
+              <div class="sil-neck"></div>
+              <div class="sil-coat"></div>
+            </div>
+            <div class="sil-label">${cfg ? cfg.label : n}</div>
+          </div>`;
+      }
+    }
+  });
 }
 
 function setSpeaker(name) {
   const el = document.getElementById('speaker-name');
-  el.textContent = name||'';
-  if (name&&name.includes('RYKER'))      el.style.color='var(--orange)';
-  else if (name&&name.includes('COMMS')) el.style.color='var(--purple)';
-  else                                   el.style.color='var(--hot)';
+  el.textContent = name || '';
+  if (!name) { el.style.color = 'var(--accent)'; return; }
+  if (name === 'Akizet') el.style.color = 'var(--accent3)';
+  else if (name === '???') el.style.color = 'var(--danger)';
+  else el.style.color = 'var(--accent)'; // Kazki
 }
 
-function showDialogue(text, callback) {
+function showDialogue(text, callback, tremble, wave = false) {
   const el = document.getElementById('dialogue-text');
   document.getElementById('continue-hint').classList.remove('visible');
-  el.innerHTML='';
+  el.innerHTML = '';
+  el.dataset.tremble = tremble ? '1' : '0';
+  el.dataset.wave = wave ? '1' : '0';
+  
   if (typeTimer) clearTimeout(typeTimer);
-  typing=true; waitingForInput=false; pendingCallback=callback;
-  let i=0; const chars=[...text];
-  const cursor=document.createElement('span'); cursor.className='cursor';
+  typing = true; waitingForInput = false; pendingCallback = callback;
+
+  let i = 0;
+  const chars = [...text];
+  const cursor = document.createElement('span'); cursor.className = 'cursor';
   el.appendChild(cursor);
+  
   function tick() {
-    if (i<chars.length) {
-      el.insertBefore(document.createTextNode(chars[i]),cursor); i++; el.appendChild(cursor);
-      typeTimer=setTimeout(tick, chars[i-1]==='\n'?50:22);
-    } else { typing=false; cursor.remove(); if(callback) callback(); }
+    if (i < chars.length) {
+      const ch = chars[i];
+      if (tremble || wave) {
+        if (ch === '\n') {
+          el.insertBefore(document.createTextNode('\n'), cursor);
+        } else {
+          const span = document.createElement('span');
+          // Apply different classes based on effect type
+          if (tremble) {
+            span.className = 'tremble-char';
+          } else if (wave) {
+            span.className = 'wave-char';
+          }
+          span.textContent = ch;
+          
+          // Stagger the animation based on character position
+          const delay = wave ? (i * 0.025) : (Math.random() * 0.28);
+          span.style.animationDelay = delay.toFixed(3) + 's';
+          
+          el.insertBefore(span, cursor);
+          requestAnimationFrame(() => span.classList.add('appeared'));
+        }
+      } else {
+        el.insertBefore(document.createTextNode(ch), cursor);
+      }
+      i++; el.appendChild(cursor);
+      typeTimer = setTimeout(tick, ch === '\n' ? 45 : 22);
+    } else {
+      typing = false; cursor.remove();
+      if (callback) callback();
+    }
   }
   tick();
 }
 
 function skipTyping() {
   if (!typing) return;
-  clearTimeout(typeTimer); typing=false;
-  const el=document.getElementById('dialogue-text');
-  const c=el.querySelector('.cursor'); if(c) c.remove();
-  el.textContent=story[currentNode].text||'';
-  if (pendingCallback) { const cb=pendingCallback; pendingCallback=null; cb(); }
+  clearTimeout(typeTimer); typing = false;
+  const el = document.getElementById('dialogue-text');
+  const c  = el.querySelector('.cursor'); if (c) c.remove();
+  const text    = story[currentNode]?.text || '';
+  const tremble = el.dataset.tremble === '1';
+  if (tremble) {
+    el.innerHTML = '';
+    [...text].forEach(ch => {
+      if (ch === '\n') {
+        el.appendChild(document.createTextNode('\n'));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'tremble-char appeared';
+        span.textContent = ch;
+        span.style.animationDelay = (Math.random() * 0.28).toFixed(2) + 's';
+        el.appendChild(span);
+      }
+    });
+  } else {
+    el.textContent = text;
+  }
+  if (pendingCallback) { const cb = pendingCallback; pendingCallback = null; cb(); }
 }
 
 function waitForClick(nextId) {
   document.getElementById('continue-hint').classList.add('visible');
-  waitingForInput=true; window._nextClickId=nextId;
+  waitingForInput = true; window._nextClickId = nextId;
 }
 
 function showChoices(choices) {
-  const panel=document.getElementById('choice-panel');
-  panel.innerHTML='';
-  choices.forEach(c=>{
-    const btn=document.createElement('button'); btn.className='choice-btn'; btn.textContent=c.text;
-    btn.onclick=()=>{ panel.classList.remove('active'); goTo(c.next); };
+  const panel = document.getElementById('choice-panel');
+  panel.innerHTML = '';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className   = 'choice-btn';
+    btn.textContent = c.text;
+    btn.onclick = () => {
+      // Shake on choice
+      document.getElementById('game').classList.remove('shaking');
+      void document.getElementById('game').offsetWidth;
+      document.getElementById('game').classList.add('shaking');
+      setTimeout(() => document.getElementById('game').classList.remove('shaking'), 500);
+
+      panel.classList.remove('active');
+      goTo(c.next);
+    };
     panel.appendChild(btn);
   });
   panel.classList.add('active');
 }
 
 function flashScreen() {
-  const f=document.getElementById('flash'); f.style.opacity='0.45';
-  setTimeout(()=>f.style.opacity='0',120);
+  const f = document.getElementById('flash');
+  f.style.opacity = '0.5';
+  setTimeout(() => f.style.opacity = '0', 130);
 }
 
 function updateHealth() {
-  const f=document.getElementById('hbar-fill'); f.style.width=health+'%';
-  f.style.background=health>60?'var(--cyan)':health>30?'var(--yellow)':'var(--hot)';
-}
-
-// ── QTE ──────────────────────────────────────────────────────
-function triggerQTE(qte) {
-  qteActive=true;
-  const overlay=document.getElementById('qte-overlay');
-  const keyEl=document.getElementById('qte-key');
-  const barWrap=document.getElementById('qte-bar-wrap');
-  const bar=document.getElementById('qte-bar');
-  const mashSec=document.getElementById('qte-mash-section');
-  const mashBar=document.getElementById('qte-mash-bar');
-  const result=document.getElementById('qte-result');
-  const prompt=document.getElementById('qte-prompt');
-  result.textContent=''; result.className=''; result.style.opacity='0';
-  prompt.textContent=qte.prompt||'ACT NOW!';
-  overlay.classList.add('active');
-
-  if (qte.type==='press') {
-    keyEl.style.display='flex'; keyEl.textContent=qte.key;
-    barWrap.style.display='block'; mashSec.classList.remove('active');
-    bar.style.transition='none'; bar.style.width='100%'; void bar.offsetWidth;
-    bar.style.transition=`width ${qte.duration}ms linear`; bar.style.width='0%';
-    let done=false;
-    const onKey=e=>{ if(!done&&e.key.toUpperCase()===qte.key.toUpperCase()){done=true;finish(true);} };
-    const onTap=()=>{ if(!done){done=true;finish(true);} };
-    document.addEventListener('keydown',onKey); overlay.addEventListener('click',onTap);
-    qteTimeoutId=setTimeout(()=>{if(!done){done=true;finish(false);}},qte.duration);
-    function finish(ok){
-      clearTimeout(qteTimeoutId); document.removeEventListener('keydown',onKey);
-      overlay.removeEventListener('click',onTap); bar.style.transition='none'; resolveQTE(ok,qte);
-    }
-
-  } else if (qte.type==='mash') {
-    keyEl.style.display='none'; barWrap.style.display='none';
-    mashSec.classList.add('active'); mashValue=0; mashBar.style.width='0%';
-    const onKey=e=>{ if(e.key===' '||e.key==='Enter'){e.preventDefault();mashValue=Math.min(100,mashValue+7);mashBar.style.width=mashValue+'%';} };
-    const onTap=()=>{ mashValue=Math.min(100,mashValue+7); mashBar.style.width=mashValue+'%'; };
-    document.addEventListener('keydown',onKey); overlay.addEventListener('click',onTap);
-    mashDecayId=setInterval(()=>{ mashValue=Math.max(0,mashValue-1.4); mashBar.style.width=mashValue+'%'; },80);
-    qteTimeoutId=setTimeout(()=>{
-      clearInterval(mashDecayId); document.removeEventListener('keydown',onKey);
-      overlay.removeEventListener('click',onTap);
-      resolveQTE(mashValue>=(qte.threshold||70),qte);
-    },qte.duration);
-  }
-}
-
-function resolveQTE(ok,qte) {
-  const result=document.getElementById('qte-result');
-  const overlay=document.getElementById('qte-overlay');
-  result.textContent=ok?'JACKED IN':'FLATLINED';
-  result.className=ok?'success':'fail'; result.style.opacity='1';
-  flashScreen();
-  setTimeout(()=>{ overlay.classList.remove('active'); qteActive=false; goTo(ok?qte.successNode:qte.failNode); },950);
+  const f = document.getElementById('hbar-fill');
+  f.style.width      = health + '%';
+  f.style.background = health > 60 ? 'var(--accent)' : health > 30 ? 'var(--accent3)' : 'var(--danger)';
 }
 
 function showEnd(node) {
-  document.getElementById('end-title').textContent=node.title;
-  document.getElementById('end-title').style.color=node.color;
-  document.getElementById('end-summary').textContent=node.summary;
+  document.getElementById('end-title').textContent   = node.title;
+  document.getElementById('end-title').style.color   = node.color;
+  document.getElementById('end-summary').textContent = node.summary;
   document.getElementById('end-screen').classList.add('active');
 }
 
-// ── Input ────────────────────────────────────────────────────
-document.getElementById('dialogue-panel').addEventListener('click',handleAdvance);
-document.addEventListener('keydown',e=>{ if(e.key===' '&&!qteActive){e.preventDefault();handleAdvance();} });
+// ── Input ─────────────────────────────────────────────────
+document.getElementById('dialogue-panel').addEventListener('click', handleAdvance);
+document.addEventListener('keydown', e => {
+  if (STALK.active || MEM.active || CLASH.active) return;
+  if (e.key === ' ') { e.preventDefault(); handleAdvance(); }
+});
 
 function handleAdvance() {
-  if (qteActive) return;
+  if (STALK.active || MEM.active || CLASH.active) return;
   if (typing) { skipTyping(); return; }
-  if (waitingForInput&&window._nextClickId) {
-    const id=window._nextClickId; window._nextClickId=null; waitingForInput=false;
-    document.getElementById('continue-hint').classList.remove('visible'); goTo(id);
+  if (waitingForInput && window._nextClickId) {
+    const id = window._nextClickId; window._nextClickId = null;
+    waitingForInput = false;
+    document.getElementById('continue-hint').classList.remove('visible');
+    goTo(id);
   }
 }
+// ════════════════════════════════════════════════════════════
+//  COIN CLASH — BATTLE SYSTEM
+//  A Limbus Company–inspired clash mechanic.
+//  Each round: pick a card, both sides roll a die,
+//  higher total wins the clash. The Enforcer escalates
+//  every round until the inevitable finale.
+// ════════════════════════════════════════════════════════════
+
+// ── CARD POOL (Kazki) ────────────────────────────────────
+const KAZKI_CARDS = [
+  {
+    id: 'habit',
+    name: 'HABIT',
+    base: 2, diceMax: 6,           // total range: 3–8
+    desc: 'You simply just let instinct take over, it\'s not new, just muscle memory.',
+    cost: 0,
+  },
+  {
+    id: 'backstreet_law',
+    name: 'BACKSTREET LAW',
+    base: 2, diceMax: 6,           // total range: 3–8
+    desc: 'Out here the only rule is survive. You\'ve had years of practice at this.',
+    cost: 0,
+  },
+  {
+    id: 'take_the_hit',
+    name: 'TAKE THE HIT',
+    base: 1, diceMax: 4,
+    desc: 'Sometimes the smartest move is knowing what you can survive. You\'ve had practice.',
+    cost: 0, guard: true,
+  },
+  {
+    id: 'nothing_to_lose',
+    name: 'NOTHING TO LOSE',
+    base: 4, diceMax: 6,
+    desc: 'What\'s a few more scars? What\'s a few more years off your life?',
+    cost: 12,
+},
+  {
+    id: 'bare_knuckles',
+    name: 'BARE KNUCKLES',
+    base: 3, diceMax: 6,           // total range: 4–9; on loss: 1.5× dmg
+    desc: 'Raw hands. No gloves, no grace. Your only and greatest weapon.',
+    cost: 0, risky: true,
+  },
+
+  {
+    id: 'bad_joke',
+    name: 'BAD JOKE',
+    base: 2, diceMax: 5,           // 3–7
+    desc: 'You say something stupid. He pauses, annoyed.\n\nThat\'s all you need.',
+    cost: 0,
+    weaken: true,
+  },
+  {
+    id: 'his_coat',
+    name: 'HIS COAT',
+    base: 1, diceMax: 5,           // total range: 2–6; on win/tie: weaken enemy next round
+    desc: 'His coat was always made out of thick material, let it soak the blow.',
+    cost: 0, weaken: true,
+  },
+];
+
+// ── ENFORCER'S ATTACKS PER ROUND ─────────────────────────
+// 7 rounds total — 6 real exchanges before the forced finale.
+// Kazki can actually win rounds 1–3 reasonably, gets badly
+// outmatched rounds 4–6, then round 7 is the inevitable end.
+const ENF_ATTACKS = [
+  {
+    name:       'BAT SWING',
+    base:       3, diceMax: 6,     // 4–9
+    dmgScale:   1.0,
+    openFlavor: 'He swings — casual, almost bored. Testing you.',
+    winFlavor:  'The bat clips your arm. Pain blooms sharp.',
+    loseFlavor: 'You slide past the swing. He\'s surprised.',
+    tieFlavor:  'You catch his forearm. A standoff of sheer will.',
+  },
+  {
+    name:       'SHOVE',
+    base:       3, diceMax: 5,     // 4–8 — Kazki has a real shot here
+    dmgScale:   0.85,
+    openFlavor: 'He throws his shoulder into you. Hard. Mean.',
+    winFlavor:  'You hit the wall. Ribs scream.',
+    loseFlavor: 'You drop your weight and he stumbles past. Your opening.',
+    tieFlavor:  'Locked together for a moment — neither of you breathes.',
+  },
+  {
+    name:       'MEASURED STRIKE',
+    base:       4, diceMax: 6,     // 5–10
+    dmgScale:   1.0,
+    openFlavor: 'He reads you now. Adjusts his grip. Comes in slower — worse.',
+    winFlavor:  'He\'s stronger than you. You knew that already.',
+    loseFlavor: 'A clean counter. He stumbles — barely.',
+    tieFlavor:  'You lock up. Neither of you wants to give first.',
+  },
+  {
+    name:       'BODY BLOW',
+    base:       5, diceMax: 5,     // 6–10
+    dmgScale:   1.1,
+    openFlavor: 'A short jab to the ribs — his first real mistake in range.',
+    winFlavor:  'It folds you in half. Breathe. Just breathe.',
+    loseFlavor: 'You twist away. His knuckles graze your coat. His coat.',
+    tieFlavor:  'You take it standing. You don\'t know how.',
+  },
+  {
+    name:       'OVERHEAD STRIKE',
+    base:       5, diceMax: 6,     // 6–11
+    dmgScale:   1.25,
+    openFlavor: 'A downward blow aimed at your skull. He\'s done playing.',
+    winFlavor:  'Down to one knee. Get up. Get up.',
+    loseFlavor: 'You barely deflect it. Your arm is screaming.',
+    tieFlavor:  'You catch the blow on your forearm. The bone groans.',
+  },
+  {
+    name:       'BRUTAL COMBO',
+    base:       6, diceMax: 6,     // 7–12
+    dmgScale:   1.35,
+    openFlavor: 'Two hits. Then three. He\'s done holding back.',
+    winFlavor:  'He puts you on the ground. The world tilts.',
+    loseFlavor: 'By luck alone. You can barely lift your arms.',
+    tieFlavor:  'You catch his wrist mid-swing. It won\'t last.',
+  },
+  {
+    name:       'FINISHING BLOW',
+    base:       99, diceMax: 1,    // forced win for enemy
+    dmgScale:   1.0,
+    finale:     true,
+    openFlavor: 'He raises the bat one final time.\n\nThere was no winning this fight.',
+    winFlavor:  'That fucking hurts.',
+    loseFlavor: '',
+    tieFlavor:  '',
+  },
+];
+
+// ── CLASH STATE ──────────────────────────────────────────
+const CLASH = {
+  active:         false,
+  round:          0,          // 0-indexed
+  enemyHP:        100,
+  nextNode:       'after_battle',
+  phase:          'idle',     // 'idle' | 'rolling' | 'result' | 'done'
+  enemyDebuff:    0,          // applied to enemy base next round
+  continueAction: null,       // function bound to continue hint
+};
+
+// ── MAIN ENTRY ───────────────────────────────────────────
+function startCoinClash() {
+  CLASH.active   = true;
+  CLASH.round    = 0;
+  CLASH.enemyHP  = 100;
+  CLASH.phase    = 'idle';
+  CLASH.enemyDebuff = 0;
+
+  applyBattleHeadshots();
+  playMusic('music_battle');
+
+  const overlay = document.getElementById('battle-overlay');
+  overlay.classList.add('active');
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity .5s';
+  requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+
+  updateClashHP();
+  setTimeout(() => clashNextRound(), 600);
+}
+
+// ── SETUP A ROUND ────────────────────────────────────────
+function clashNextRound() {
+  if (CLASH.round >= ENF_ATTACKS.length) { clashEnd(); return; }
+
+  const atk    = ENF_ATTACKS[CLASH.round];
+  const isFinal = !!atk.finale;
+
+  CLASH.phase  = 'idle';
+  document.getElementById('bt-round-num').textContent = CLASH.round + 1;
+
+  // Reset coins
+  resetClashCoins();
+
+  // Reset result banner
+  const rb = document.getElementById('bt-result-banner');
+  rb.textContent = ''; rb.className = '';
+
+  // Reset clash line
+  document.getElementById('bt-clash-line').classList.remove('active');
+
+  // Kazki card display reset
+  const kd = document.getElementById('bt-kazki-card-disp');
+  kd.classList.remove('lit');
+  document.getElementById('bt-kcard-name').textContent  = '—';
+  document.getElementById('bt-kcard-power').textContent = isFinal ? '' : 'select a card';
+
+  // Enemy card
+  const eBase = Math.max(1, atk.base - CLASH.enemyDebuff);
+  CLASH.enemyDebuff = 0;
+  document.getElementById('bt-ecard-name').textContent  = atk.name;
+  document.getElementById('bt-ecard-power').textContent = isFinal ? '???'
+    : `${eBase + 1} \u2013 ${eBase + atk.diceMax}`;
+
+  // Flavor
+  document.getElementById('bt-flavor').textContent = atk.openFlavor;
+
+  // Hide continue
+  hideContinue();
+
+  // Build player cards
+  buildPlayerCards(isFinal);
+}
+
+// ── BUILD PLAYER CARDS ───────────────────────────────────
+function buildPlayerCards(isFinal) {
+  const row = document.getElementById('bt-cards-row');
+  row.innerHTML = '';
+
+  if (isFinal) {
+    document.getElementById('bt-instruction').textContent = '— No escape. —';
+    const btn = document.createElement('button');
+    btn.className = 'bt-player-card';
+    btn.innerHTML = `
+      <div class="bt-pcard-name">ENDURE</div>
+      <div class="bt-pcard-desc">Hold on. Just a little longer.</div>`;
+    btn.onclick = () => clashCardSelected(btn, { id:'endure_final', base:0, diceMax:0, cost:0 });
+    row.appendChild(btn);
+  } else {
+    document.getElementById('bt-instruction').textContent = '— Choose Your Response —';
+
+    // Pick 3 cards; always offer DESPERATE if Kazki is badly hurt
+    const pool = [...KAZKI_CARDS];
+    const picks = [];
+    if (health < 40) {
+      const di = pool.findIndex(c => c.id === 'desperate');
+      if (di !== -1) picks.push(pool.splice(di, 1)[0]);
+    }
+    while (picks.length < 3 && pool.length) {
+      const i = Math.floor(Math.random() * pool.length);
+      picks.push(pool.splice(i, 1)[0]);
+    }
+
+    picks.forEach(card => {
+      const btn = document.createElement('button');
+      btn.className = 'bt-player-card';
+      const minP = card.base + 1, maxP = card.base + card.diceMax;
+      const tagLine = card.cost   ? `<div class="bt-pcard-tag cost">▸ Costs ${card.cost} HP</div>`
+                    : card.guard  ? `<div class="bt-pcard-tag guard">▸ Guard: halve damage</div>`
+                    : card.risky  ? `<div class="bt-pcard-tag risky">▸ Loss deals 1.5× damage</div>`
+                    : card.weaken ? `<div class="bt-pcard-tag weaken">▸ Weakens foe next round</div>`
+                    : '';
+      btn.innerHTML = `
+        <div class="bt-pcard-name">${card.name}</div>
+        <div class="bt-pcard-range">${minP} \u2013 ${maxP}</div>
+        <div class="bt-pcard-desc">${card.desc}</div>
+        ${tagLine}`;
+      btn.onclick = () => clashCardSelected(btn, card);
+      row.appendChild(btn);
+    });
+  }
+}
+
+// ── CARD SELECTED ─────────────────────────────────────────
+function clashCardSelected(btn, card) {
+  if (CLASH.phase !== 'idle') return;
+  CLASH.phase = 'rolling';
+
+  // Lock all cards
+  document.querySelectorAll('.bt-player-card').forEach(b => {
+    b.classList.add('bt-disabled'); b.disabled = true;
+  });
+  btn.classList.add('bt-selected');
+  btn.classList.remove('bt-disabled');
+
+  // Apply HP cost immediately
+  if (card.cost > 0) {
+    health = Math.max(1, health - card.cost);
+    updateHealth(); updateClashHP();
+    btDoFlash('rgba(200,48,48,.22)');
+  }
+
+  // Show Kazki's chosen card
+  document.getElementById('bt-kazki-card-disp').classList.add('lit');
+  document.getElementById('bt-kcard-name').textContent  = card.name;
+  const kMinP = card.base + 1, kMaxP = card.base + (card.diceMax || 0);
+  document.getElementById('bt-kcard-power').textContent =
+    (card.id === 'endure_final') ? '—' : `${kMinP} \u2013 ${kMaxP}`;
+
+  // Roll animation
+  const kc = document.getElementById('bt-k-coin');
+  const ec = document.getElementById('bt-e-coin');
+  kc.classList.add('rolling'); kc.textContent = '?';
+  ec.classList.add('rolling'); ec.textContent = '?';
+  playSound('snd_dice_roll');
+
+  // Clash line activates
+  setTimeout(() => document.getElementById('bt-clash-line').classList.add('active'), 300);
+
+  // Resolve after animation
+  setTimeout(() => resolveClash(card), 1300);
+}
+
+// ── RESOLVE THE CLASH ─────────────────────────────────────
+function resolveClash(card) {
+  const atk    = ENF_ATTACKS[CLASH.round];
+  const isFinal = !!atk.finale;
+  const kc     = document.getElementById('bt-k-coin');
+  const ec     = document.getElementById('bt-e-coin');
+
+  kc.classList.remove('rolling');
+  ec.classList.remove('rolling');
+
+  // Roll dice
+  const kDice  = isFinal ? 0 : (1 + Math.floor(Math.random() * card.diceMax));
+  const kTotal = card.base + kDice;
+
+  const eBaseActual = Math.max(1, atk.base - CLASH.enemyDebuff);
+  const eDice       = isFinal ? 99 : (1 + Math.floor(Math.random() * atk.diceMax));
+  const eTotal      = eBaseActual + eDice;
+
+  let banner, bannerClass, flavor;
+  let playerWon = false;
+
+  if (isFinal) {
+    // ── Forced loss ───────────────────────────────────────
+    kc.textContent = '—'; kc.className = 'bt-coin coin-loss';
+    ec.textContent = '\u221E'; ec.className = 'bt-coin coin-win';
+    banner      = 'OVERWHELMING FORCE';
+    bannerClass = 'res-final';
+    flavor      = atk.winFlavor;
+    const finalDmg = Math.max(25, health - 5);
+    health = Math.max(5, health - finalDmg);
+    btDoFlash('rgba(200,48,96,.55)');
+    btDoShake();
+
+  } else if (kTotal > eTotal) {
+    // ── Player wins ───────────────────────────────────────
+    playerWon = true;
+    kc.textContent = kTotal; kc.className = 'bt-coin coin-win';
+    ec.textContent = eTotal; ec.className = 'bt-coin coin-loss';
+    banner      = 'DEFLECTED';
+    bannerClass = 'res-win';
+    flavor      = atk.loseFlavor;
+    const gainDmg = Math.max(4, (kTotal - eTotal) * 2);
+    CLASH.enemyHP = Math.max(0, CLASH.enemyHP - gainDmg);
+    btDoFlash('rgba(200,128,58,.28)');
+    if (card.weaken) CLASH.enemyDebuff = 2;
+    playSound('snd_kazki_win');
+
+    playSound('snd_clash_win');
+
+  } else if (kTotal === eTotal) {
+    // ── Tie ───────────────────────────────────────────────
+    kc.textContent = kTotal; kc.className = 'bt-coin coin-tie';
+    ec.textContent = eTotal; ec.className = 'bt-coin coin-tie';
+    banner      = 'CLASH';
+    bannerClass = 'res-tie';
+    flavor      = atk.tieFlavor;
+    const tieDmg = 6;
+    health = Math.max(1, health - tieDmg);
+    btDoFlash('rgba(160,144,112,.22)');
+    if (card.weaken) CLASH.enemyDebuff = 1;
+
+  } else {
+    // ── Player loses ──────────────────────────────────────
+    kc.textContent = kTotal; kc.className = 'bt-coin coin-loss';
+    ec.textContent = eTotal; ec.className = 'bt-coin coin-win';
+    banner      = 'STRUCK DOWN';
+    bannerClass = 'res-loss';
+    flavor      = atk.winFlavor;
+    let dmg = Math.max(8, (eTotal - kTotal) * 4);
+    if (card.guard) dmg = Math.floor(dmg * 0.5);
+    if (card.risky) dmg = Math.floor(dmg * 1.5);
+    health = Math.max(1, health - dmg);
+    btDoFlash('rgba(139,26,26,.55)');
+    btDoShake();
+    // Mark Kazki headshot as hurt on later rounds
+    const kf = document.getElementById('bt-kazki-headshot');
+    if (CLASH.round >= 2 && kf) kf.classList.add('hurt-critical');
+  }
+
+  updateHealth();
+  updateClashHP();
+
+  // Show banner
+  const rb = document.getElementById('bt-result-banner');
+  rb.textContent = banner;
+  rb.className = bannerClass;
+  requestAnimationFrame(() => { rb.classList.add('show'); });
+
+  document.getElementById('bt-flavor').textContent = flavor;
+
+  CLASH.phase = 'result';
+  CLASH.round++;
+
+  // Decide next step
+  const roundsDone = CLASH.round >= ENF_ATTACKS.length;
+  const kazOut     = health <= 5;
+
+  setTimeout(() => {
+    if (roundsDone || kazOut || isFinal) {
+      // Battle ends
+      showContinue(() => clashEnd());
+    } else {
+      showContinue(() => {
+        hideContinue();
+        clashNextRound();
+      });
+    }
+  }, isFinal ? 1200 : 700);
+}
+
+// ── HELPERS ──────────────────────────────────────────────
+function updateClashHP() {
+  const pct = Math.max(0, Math.min(100, health));
+  const fill = document.getElementById('bt-kazki-hp-fill');
+  fill.style.width = pct + '%';
+  fill.style.background =
+    pct > 60 ? 'linear-gradient(90deg,var(--accent2),var(--accent))' :
+    pct > 30 ? 'linear-gradient(90deg,#8b6a20,var(--accent3))' :
+               'linear-gradient(90deg,#8c1a1a,var(--danger))';
+  document.getElementById('bt-enemy-hp-fill').style.width = Math.max(0, CLASH.enemyHP) + '%';
+
+  // Hurt headshot — triggers at < 50 HP
+  const kazkiFrame = document.getElementById('bt-kazki-headshot');
+  const portBox    = document.getElementById('bt-kazki-portrait-box');
+  const statEl     = document.getElementById('bt-kazki-status');
+  if (pct < 50) {
+    if (kazkiFrame) kazkiFrame.classList.add('hurt-critical');
+    if (portBox)    portBox.classList.add('hurt-critical');
+    if (statEl)     statEl.textContent = '⚠ Wounded';
+  } else {
+    if (kazkiFrame) kazkiFrame.classList.remove('hurt-critical');
+    if (portBox)    portBox.classList.remove('hurt-critical');
+    if (statEl)     statEl.textContent = '';
+  }
+}
+
+function resetClashCoins() {
+  const kc = document.getElementById('bt-k-coin');
+  const ec = document.getElementById('bt-e-coin');
+  kc.textContent = '?'; kc.className = 'bt-coin';
+  ec.textContent = '?'; ec.className = 'bt-coin';
+}
+
+function btDoFlash(color) {
+  const f = document.getElementById('bt-flash');
+  f.style.background = color; f.style.opacity = '.48';
+  setTimeout(() => { f.style.opacity = '0'; }, 220);
+}
+
+function btDoShake() {
+  const g = document.getElementById('game');
+  g.classList.remove('shaking'); void g.offsetWidth;
+  g.classList.add('shaking');
+  setTimeout(() => g.classList.remove('shaking'), 360);
+}
+
+function showContinue(action) {
+  const hint = document.getElementById('bt-continue-hint');
+  CLASH.continueAction = action;
+  hint.classList.add('bt-visible');
+  hint.onclick = () => { if (CLASH.continueAction) { CLASH.continueAction(); CLASH.continueAction = null; } };
+}
+
+function hideContinue() {
+  document.getElementById('bt-continue-hint').classList.remove('bt-visible');
+  CLASH.continueAction = null;
+}
+
+// ── END BATTLE ───────────────────────────────────────────
+function clashEnd() {
+  CLASH.active = false;
+  CLASH.phase  = 'done';
+  hideContinue();
+
+  const _kf = document.getElementById('bt-kazki-headshot');
+  if (_kf) { _kf.classList.remove('hurt-critical'); }
+  const _pb = document.getElementById('bt-kazki-portrait-box');
+  if (_pb) _pb.classList.remove('hurt-critical');
+  const _se = document.getElementById('bt-kazki-status');
+  if (_se) _se.textContent = '';
+
+  const overlay = document.getElementById('battle-overlay');
+  overlay.style.transition = 'opacity .65s ease';
+  overlay.style.opacity    = '0';
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.style.opacity    = '';
+    overlay.style.transition = '';
+    health = Math.max(5, health);
+    updateHealth();
+    goTo(CLASH.nextNode);
+  }, 680);
+}
+
 </script>
 </body>
 </html>
